@@ -1,13 +1,12 @@
 import { Hono } from 'hono'
-import { PrismaClient } from '../generated/prisma/edge';
-import { withAccelerate } from '@prisma/extension-accelerate';
 import { sign } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
+import { getPrismaClient } from '../lib/prisma';
 
 const user = new Hono<{
     Bindings: {
         DATABASE_URL: string,
-        DIRECT_DATABASE_URL: string,
+        ACCELERATE_URL: string,
         JWT_SECRET_KEY: string
     }
 }>()
@@ -18,16 +17,16 @@ const user = new Hono<{
 
 
 user.post('/signup', async (c) => {
-    const prisma = new PrismaClient({
-        accelerateUrl: c.env.DIRECT_DATABASE_URL
-    }).$extends(withAccelerate())
-
+    console.log(c.env.JWT_SECRET_KEY)
+    console.log(c.env.DATABASE_URL)
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
+    
     // console.log(c.env.DATABASE_URL)
 
     try {
         const body = await c.req.json();    
 
-        const isUser = await prisma.user.findUnique({
+        const isUser = await prisma.userModel.findUnique({
             where: {
                 email: body.email,
             },
@@ -42,7 +41,7 @@ user.post('/signup', async (c) => {
         const hashedPassword = await bcrypt.hash(body.password, 10)
 
 
-        const newUser = await prisma.user.create({
+        const newUser = await prisma.userModel.create({
             data: {
                 email: body.email,
                 password: hashedPassword,
@@ -69,14 +68,14 @@ user.post('/signup', async (c) => {
 });
 
 user.post('/signin', async (c) => {
-    const prisma = new PrismaClient({
-        accelerateUrl: c.env.DIRECT_DATABASE_URL
-    }).$extends(withAccelerate())
+    // console.log(c.env.JWT_SECRET_KEY)
+    // console.log(c.env.DATABASE_URL)
+    const prisma = getPrismaClient(c.env.DATABASE_URL)
 
     try{
         const body = await c.req.json();
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.userModel.findUnique({
             where: {
                 email: body.email,
             }
