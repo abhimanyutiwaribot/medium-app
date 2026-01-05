@@ -4,7 +4,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // import { withAccelerate } from "@prisma/extension-accelerate";
 import { Pool } from "pg";
 
-// const connectionString = `${process.env.DATABASE_URL}`
 export function getPrismaClient(database_url: string) {
     if(!database_url){
         throw new Error("database_url is not defined")
