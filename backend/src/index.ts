@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import user from './routes/user-routes'
-import blog from './routes/blog-routes'
+import article from './routes/article-routes'
 const app = new Hono()
 
 app.get('/', (c) => {
@@ -13,7 +13,7 @@ app.get('/', (c) => {
 */
 
 app.route('/api/v1/user', user);
-// app.route('/api/v1/blog', blog);
+app.route('/api/v1/c', article);
 
 
 
