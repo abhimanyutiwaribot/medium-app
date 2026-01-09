@@ -19,7 +19,7 @@ const user = new Hono<{
 user.post('/signup', async (c) => {
     console.log(c.env.JWT_SECRET_KEY)
     console.log(c.env.DATABASE_URL)
-    const prisma = getPrismaClient(c.env.DATABASE_URL)
+    const prisma = getPrismaClient(c.env.ACCELERATE_URL)
     
     // console.log(c.env.DATABASE_URL)
 
@@ -45,6 +45,7 @@ user.post('/signup', async (c) => {
             data: {
                 email: body.email,
                 password: hashedPassword,
+                username: body.username,
                 name: body.name ?? null,
             }
         })
@@ -70,7 +71,7 @@ user.post('/signup', async (c) => {
 user.post('/signin', async (c) => {
     // console.log(c.env.JWT_SECRET_KEY)
     // console.log(c.env.DATABASE_URL)
-    const prisma = getPrismaClient(c.env.DATABASE_URL)
+    const prisma = getPrismaClient(c.env.ACCELERATE_URL)
 
     try{
         const body = await c.req.json();
