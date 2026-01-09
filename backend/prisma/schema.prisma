@@ -7,7 +7,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
-  runtime = "cloudflare"
+  runtime  = "cloudflare"
 }
 
 datasource db {
@@ -15,20 +15,66 @@ datasource db {
 }
 
 model UserModel {
-  id        String  @id @default(uuid())
-  email     String  @unique 
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
   name      String?
   password  String
-  blogs     Blogs[]
+  createdAt DateTime @default(now())
+
+  article Article[]
+  streak  WinningStreak?
+  events  Events[]
 }
 
-model Blogs {
-  id        String       @id @default(uuid())
-  title     String 
-  content   String
-  published Boolean      @default(false)
-  authorId  String       @unique
-  author    UserModel    @relation(fields: [authorId], references: [id])
+model Article {
+  id              String   @id @default(uuid())
+  authorId        String
+  published       Boolean  @default(false)
+  published_At    DateTime @default(now())
+  current_version Int
+
+  author    UserModel        @relation(fields: [authorId], references: [id])
+  versions  ArticleVersion[]
+  createdAt DateTime         @default(now())
 }
 
+model WinningStreak {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  currentStreak Int
+  longestStreak Int
+  lastWriteDate DateTime
 
+  user UserModel @relation(fields: [userId], references: [id])
+}
+
+model Events {
+  id        String   @id @default(uuid())
+  userId    String
+  type      EventType
+  payload   Json
+  processed Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  user UserModel @relation(fields: [userId], references: [id])
+} 
+
+model ArticleVersion {
+  id           String    @id @default(uuid())
+  articleId    String
+  version      Int
+  title        String
+  content      String
+  wordCount    Int
+  createdAt    DateTime @default(now())
+  article      Article @relation(fields: [articleId], references: [id])
+  @@unique([articleId, version])
+
+}
+
+enum EventType{
+  ARTICLE_VERSION_CREATED
+  ARTICLE_PUBLISHED
+  STREAK_UPDATED
+}
