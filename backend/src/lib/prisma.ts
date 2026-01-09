@@ -1,8 +1,7 @@
 import "dotenv/config.js"
 import { PrismaClient } from "../generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-// import { withAccelerate } from "@prisma/extension-accelerate";
-import { Pool } from "pg";
+// import { PrismaPg } from "@prisma/adapter-pg";
+// import { Pool } from "pg";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 // export function getPrismaClient(database_url: string) {
