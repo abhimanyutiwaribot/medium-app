@@ -11,7 +11,7 @@ const user = new Hono<{
     }
 }>()
 
- 
+
 // POST /api/v1/user/signup
 // POST /api/v1/user/signin
 
@@ -20,48 +20,54 @@ user.post('/signup', async (c) => {
     console.log(c.env.JWT_SECRET_KEY)
     console.log(c.env.DATABASE_URL)
     const prisma = getPrismaClient(c.env.ACCELERATE_URL)
-    
+
     // console.log(c.env.DATABASE_URL)
 
     try {
-        const body = await c.req.json();    
+        const body = await c.req.json();
+        const { email, password, username, name } = body
+
+        if (!email || !password || !username) {
+            return c.json({ error: "Missing fields" }, 400)
+        }
+
 
         const isUser = await prisma.userModel.findUnique({
             where: {
-                email: body.email,
+                email: email,
             },
         })
 
-        if(isUser){
+        if (isUser) {
             return c.json({
                 message: `User already exists. Please Sign in.`
             }, 409)
         }
 
-        const hashedPassword = await bcrypt.hash(body.password, 10)
+        const hashedPassword = await bcrypt.hash(password, 10)
 
 
         const newUser = await prisma.userModel.create({
             data: {
-                email: body.email,
+                email: email,
                 password: hashedPassword,
-                username: body.username,
-                name: body.name ?? null,
+                username: username,
+                name: name ?? null,
             }
         })
 
         const jwt = await sign({
-            id: newUser.id
+            sub: newUser.id
         }, c.env.JWT_SECRET_KEY)
-        
+
         return c.json({
             message: "User Created Successfully",
             token: jwt
-        })
+        }, 201);
 
     } catch (e) {
         console.error(e)
-        c.status(403);
+        c.status(500);
         return c.json({
             error: `error while signing up`
         })
@@ -73,34 +79,40 @@ user.post('/signin', async (c) => {
     // console.log(c.env.DATABASE_URL)
     const prisma = getPrismaClient(c.env.ACCELERATE_URL)
 
-    try{
+    try {
         const body = await c.req.json();
+        const { email, password } = body;
+
+        if (!email || !password) {
+            return c.json({ error: "Missing credentials" }, 400);
+        }
+
 
         const user = await prisma.userModel.findUnique({
             where: {
-                email: body.email,
+                email: email,
             }
         })
 
-        if(!user){
-            c.status(403);
+        if (!user) {
+            c.status(401);
             return c.json({
                 error: `Credentials are invalid`
             })
         }
 
         const isPasswordvalid = await bcrypt.compare(
-            body.password, user.password
+            password, user.password
         )
 
-        if(!isPasswordvalid){
+        if (!isPasswordvalid) {
             return c.json({
                 error: "Invalid Credentials"
             }, 403)
         }
 
         const jwt = await sign({
-            id: user.id
+            sub: user.id
         }, c.env.JWT_SECRET_KEY)
 
         return c.json({
@@ -108,7 +120,7 @@ user.post('/signin', async (c) => {
             token: jwt
         }, 200)
 
-    }catch(e){
+    } catch (e) {
         console.error(e);
         c.json({
             message: "Internal Server Error",
