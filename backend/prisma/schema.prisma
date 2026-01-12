@@ -76,5 +76,4 @@ model ArticleVersion {
 enum EventType{
   ARTICLE_VERSION_CREATED
   ARTICLE_PUBLISHED
-  STREAK_UPDATED
 }
