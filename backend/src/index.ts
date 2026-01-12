@@ -7,13 +7,10 @@ app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-/*
 
-
-*/
 
 app.route('/api/v1/user', user);
-app.route('/api/v1/c', article);
+app.route('/api/v1/q', article);
 
 
 
