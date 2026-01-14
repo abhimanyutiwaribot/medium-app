@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { getPrismaClient } from "../lib/prisma";
 import { createArticle } from "../article/create-article";
 import { editArticle } from "../article/edit-article";
-import { runEventWorker } from "../workers/event-worker";
 import { getArticle } from "../article/get-article";
 import { getArticleVersions } from "../article/get-article-versions";
 import { getArticleVersion } from "../article/get-article-version";
 import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
+import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
+import { resolve } from "node:dns";
 
 
 const article = new Hono<{
@@ -29,35 +30,48 @@ article.post('/article', async (c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
     const body = await c.req.json();
+    const userId = c.get('userId');
 
-    const { authorId, title, content } = body;
+    const parsed = createArticleSchema.safeParse(body);
+
+    if(!parsed.success){
+      return c.json({
+        error: parsed.error
+      }, 400)
+    }
 
     const articleCreate = await createArticle(
       prisma,
-      authorId,
-      title,
-      content
+      userId,
+      body.title,
+      body.content
     )
     
     return c.json(articleCreate);
 });
 
 
-
+//update article
 article.put("/:id", async(c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
     const articleId = c.req.param("id");
     const body = await c.req.json();
 
-    const { title, content } = body;
+    const parsed = editArticleSchema.safeParse(body);
+    if(!parsed.success){
+      return c.json({
+        error: parsed.error
+      }, 400)
+    }
+
     const userId = c.get('userId')
     const result = await editArticle(
       prisma,
       articleId,
       userId,
-      title,
-      content
+      body.title,
+      body.content
     )
     
     return c.json(result);
@@ -126,7 +140,6 @@ article.post("/:id/publish", async(c) => {
   const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
   const articleId = c.req.param("id");
-  const body = await c.req.json();
   const userId = c.get('userId');
 
   const result = await publishArticle(
