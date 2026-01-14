@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { sign } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
 import { getPrismaClient } from '../lib/prisma';
+import { signinSchema, signupSchema } from '@abhimanyutiwaribot/medium-app-validation';
 
 const user = new Hono<{
     Bindings: {
@@ -17,24 +18,22 @@ const user = new Hono<{
 
 
 user.post('/signup', async (c) => {
-    console.log(c.env.JWT_SECRET_KEY)
-    console.log(c.env.DATABASE_URL)
     const prisma = getPrismaClient(c.env.ACCELERATE_URL)
-
-    // console.log(c.env.DATABASE_URL)
 
     try {
         const body = await c.req.json();
-        const { email, password, username, name } = body
 
-        if (!email || !password || !username) {
-            return c.json({ error: "Missing fields" }, 400)
+        const parsed = signupSchema.safeParse(body);
+
+        if(!parsed.success){
+            return c.json({
+                error: parsed.error.flatten()
+            }, 400)
         }
-
 
         const isUser = await prisma.userModel.findUnique({
             where: {
-                email: email,
+                email: body.email,
             },
         })
 
@@ -44,15 +43,15 @@ user.post('/signup', async (c) => {
             }, 409)
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const hashedPassword = await bcrypt.hash(body.password, 10)
 
 
         const newUser = await prisma.userModel.create({
             data: {
-                email: email,
+                email: body.email,
                 password: hashedPassword,
-                username: username,
-                name: name ?? null,
+                username: body.username,
+                name: body.name ?? null,
             }
         })
 
@@ -81,16 +80,18 @@ user.post('/signin', async (c) => {
 
     try {
         const body = await c.req.json();
-        const { email, password } = body;
+        const parsed = signinSchema.safeParse(body);
 
-        if (!email || !password) {
-            return c.json({ error: "Missing credentials" }, 400);
+        if(!parsed.success){
+            return c.json({
+                error: parsed.error.flatten()
+            }, 400)
         }
 
 
         const user = await prisma.userModel.findUnique({
             where: {
-                email: email,
+                email: body.email,
             }
         })
 
@@ -102,7 +103,7 @@ user.post('/signin', async (c) => {
         }
 
         const isPasswordvalid = await bcrypt.compare(
-            password, user.password
+            body.password, user.password
         )
 
         if (!isPasswordvalid) {
