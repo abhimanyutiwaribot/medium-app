@@ -1,9 +1,27 @@
 import { useState } from "react";
 import EditorCanvas from "../components/editor/editor-canvas";
+import { editorJsToMarkdown } from "../utils/markdown";
+import { apifetch } from "../api/client";
 
 export default function Editor() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState<any>(null);
+
+  async function saveDraft(){
+    if(!title || !content) return;
+
+    const markdown = editorJsToMarkdown(content);
+
+    await apifetch("/q/article", {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        content: markdown,
+      })
+    });
+
+    alert("Draft saved !!");
+  }
 
   return (
     <div className="min-h-screen">
@@ -34,12 +52,19 @@ export default function Editor() {
             bg-transparent
             text-xl
             sm:text-2xl
+            sm:px-0
             lg:text-3xl
           "
         />
-
-        <EditorCanvas onChange={setContent} />
+        <div>
+          <EditorCanvas onChange={setContent} />
+        </div>
+        
       </div>
+
+      <button onClick={saveDraft} className="mt-6 bg-black text-white px-4 py-2 rounded">
+        Save Draft
+      </button>
     </div>
   );
 }
