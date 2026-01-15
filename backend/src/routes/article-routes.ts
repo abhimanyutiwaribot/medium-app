@@ -8,7 +8,7 @@ import { getArticleVersion } from "../article/get-article-version";
 import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
-import { resolve } from "node:dns";
+// import { resolve } from "node:dns";
 
 
 const article = new Hono<{
