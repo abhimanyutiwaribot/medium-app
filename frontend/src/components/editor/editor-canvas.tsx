@@ -5,41 +5,71 @@ import ImageTool from "@editorjs/image";
 import EditorjsList from "@editorjs/list";
 import { useEffect, useRef } from "react";
 
-
 type Props = {
   onChange: (data: any) => void;
 }
 
-export default function EditorCanvas({ onChange }: Props){
+export default function EditorCanvas({ onChange }: Props) {
   const editorRef = useRef<EditorJS | null>(null);
 
   useEffect(() => {
-    if(editorRef.current) return;
+    if (editorRef.current) return;
 
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Tell what's on your mind....",
-      tools:{
+      tools: {
         header: Header,
-        list: EditorjsList,
+        List: {
+          class: EditorjsList,
+          config: {
+            defaultStyle: 'unordered',
+            allowedStyles: ['unordered', 'ordered']
+          }
+        },
         code: CodeTool,
         image: {
           class: ImageTool,
-          config:{
+          config: {
             uploader: {
-              uploadByFile: async (file: File) => {
+              async uploadByFile(file: File) {
+                const signRes = await fetch("http://localhost:8787/api/v1/image/sign", {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                });
+
+                const sig = await signRes.json();
+
+       
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("api_key", sig.apiKey);
+                formData.append("timestamp", sig.timestamp);
+                formData.append("signature", sig.signature);
+                formData.append("folder", sig.folder);
+
+                const uploadRes = await fetch(
+                  `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+                  {
+                    method: "POST",
+                    body: formData,
+                  }
+                );
+
+                const data = await uploadRes.json();
+
                 return {
                   success: 1,
-                  file: {
-                    url: URL.createObjectURL(file),
-                  }
-                }
+                  file: { url: data.secure_url },
+                };
               }
+
             }
           }
         }
       },
-      async onChange(){
+      async onChange() {
         const content = await editor.save();
         onChange(content);
       },
@@ -53,6 +83,6 @@ export default function EditorCanvas({ onChange }: Props){
     };
   }, [onChange])
 
-  return <div id="editorjs" className="max-w-none"/>;
+  return <div id="editorjs" className="prose max-w-none" />;
 
 }
