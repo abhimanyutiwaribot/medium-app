@@ -10,72 +10,132 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .order-0 {
+    order: 0;
+  }
+  .order-1 {
+    order: 1;
+  }
 }
 
-
+/* ---------------- Editor.js Base ---------------- */
 .codex-editor {
-  position: absolute;
-  margin-top: 0;
+  position: relative;
 }
-
 
 .codex-editor__redactor {
   padding-top: 0;
 }
 
-
 .ce-block:first-child {
   margin-top: 0;
 }
 
+/* ---------------- Content Alignment ---------------- */
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
 
+/* ---------------- Typography ---------------- */
 .ce-paragraph {
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 @media (min-width: 640px) {
   .ce-paragraph {
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 }
 
 @media (min-width: 1024px) {
   .ce-paragraph {
-    font-size: 20px;
+    font-size: 1.25rem;
   }
 }
-
 
 .ce-header {
   font-weight: 700;
 }
 
 .ce-header[data-level="1"] {
-  font-size: 28px;
+  font-size: 1.875rem;
 }
 
 @media (min-width: 640px) {
   .ce-header[data-level="1"] {
-    font-size: 32px;
+    font-size: 2.25rem;
   }
 }
 
 @media (min-width: 1024px) {
   .ce-header[data-level="1"] {
-    font-size: 36px;
+    font-size: 3rem;
   }
 }
 
-
-.ce-block__content {
-  margin-left: 0;
-  margin-right: 0;
+/* ---------------- Images ---------------- */
+.image-tool__image {
+  max-width: 100%;
 }
 
+.image-tool__image img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
 
+/* ---------------- Code Blocks ---------------- */
+
+.ce-code__content {
+  font-family: serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .ce-code__content {
+    font-size: 0.75rem;
+  }
+}
+
+/* ---------------- Toolbar Behavior ---------------- */
 .ce-toolbar__plus,
 .ce-toolbar__settings-btn {
-  width: 36px;
-  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+  
+
+@media (min-width: 640px) {
+  .ce-toolbar__plus,
+  .ce-toolbar__settings-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .ce-toolbar__settings-btn {
+    order: 1;
+    margin-top: 0.25rem;
+    width: 100%;
+  }
+  .ce-toolbar__actions {
+    order: 0;
+  }
+  .ce-toolbar {
+    margin-top: 0.25rem;
+  }
+}
+
+/* ---------------- Safety ---------------- */
+html,
+body {
+  overflow-x: hidden;
 }
