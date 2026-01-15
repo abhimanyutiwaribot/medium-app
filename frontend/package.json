@@ -17,10 +17,14 @@
     "@editorjs/image": "^2.10.3",
     "@editorjs/list": "^2.0.9",
     "@hookform/resolvers": "^5.2.2",
+    "highlight.js": "^11.11.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.12.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "zod": "^4.3.5"
   },
   "devDependencies": {
