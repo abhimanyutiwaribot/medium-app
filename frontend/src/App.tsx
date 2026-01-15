@@ -4,6 +4,7 @@ import './App.css'
 import Signup from './pages/sign-up'
 import Signin from './pages/sign-in'
 import Editor from './pages/editor'
+import Article from './pages/article'
 
 function App() {
 
@@ -25,6 +26,8 @@ function App() {
           <Route path="/signin" element= {<Signin/>}/>
           <Route path="*" element= {<Navigate to={"/signin"}/>}/>
           <Route path="/editor" element={<Editor/>} />
+          <Route path="/article/:id" element={<Article />} />
+
           <Route path="/profile" />
         </Routes>
       </BrowserRouter>
