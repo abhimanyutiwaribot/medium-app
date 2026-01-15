@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import user from './routes/user-routes'
 import article from './routes/article-routes'
 import { cors } from 'hono/cors'
-import { resolve } from 'node:dns'
+// import { resolve } from 'node:dns'
+import image from './routes/image-route'
 const app = new Hono()
 
 app.use("*", cors({
@@ -31,6 +32,7 @@ app.get('/api/v1/health', (c) => {
 
 app.route('/api/v1/user', user);
 app.route('/api/v1/q', article);
+app.route('/api/v1/image', image);
 
 
 
