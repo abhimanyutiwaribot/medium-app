@@ -13,7 +13,7 @@ export async function getArticleVersions(
     userId
   )
 
-  return await prisma.articleVersion.findMany({
+  const versions = await prisma.articleVersion.findMany({
     where:{
       articleId
     },
@@ -27,5 +27,17 @@ export async function getArticleVersions(
       version: "desc"
     }
   });
+
+  return {
+    articleId,
+    current_version: article.current_version,
+    published_version: article.published_version,
+    versions: versions.map((v) => ({
+      version: v.version,
+      title: v.title,
+      created_At : v.createdAt,
+      isPublished: v.version === article.published_version,
+    }))
+  };
  
 }
