@@ -8,6 +8,13 @@ const feed = new Hono<{
   }
 }>();
 
+feed.onError((err, c) => {
+  console.error('Error', err);
+  return c.json({
+    error: "Internal Server Error"
+  }, 500)
+})
+
 
 feed.get("/", async (c) => {
   const prisma = getPrismaClient(c.env.ACCELERATE_URL);
