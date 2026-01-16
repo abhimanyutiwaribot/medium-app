@@ -14,7 +14,8 @@ export async function articleOwnership(
       authorId: true,
       published: true,
       published_At: true,
-      current_version: true
+      current_version: true,
+      published_version: true
     }
   })
 
