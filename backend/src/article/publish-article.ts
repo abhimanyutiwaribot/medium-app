@@ -4,7 +4,8 @@ import { articleOwnership } from "./article-ownership";
 export async function publishArticle(
   prisma: PrismaDB,
   articleId: string,
-  userId: string
+  userId: string,
+  version?: number
 ) {
   const article = await articleOwnership(
     prisma,
@@ -16,24 +17,35 @@ export async function publishArticle(
     return article;
   }
 
+  if (!article) {
+    throw new Error("Article not found");
+  }
+
+  if (article.authorId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
   return prisma.$transaction(async (tx) => {
+    const public_version = version ?? article.current_version;
 
-    if (!article) {
-      throw new Error("Article not found");
-    }
+    const exists = await tx.articleVersion.findUnique({
+      where:{
+        articleId_version:{
+          articleId,
+          version: public_version
+        }
+      }
+    })
 
-    if (article.authorId !== userId) {
-      throw new Error("Unauthorized");
-    }
-
-    if(article.published){
-      return article;
+    if(!exists){
+      throw new Error("Version does not exist");
     }
 
     const publishedArticle = await tx.article.update({
       where: { id: articleId },
       data: {
         published: true,
+        published_version: public_version,
         published_At: new Date(),
       },
     });
@@ -45,6 +57,7 @@ export async function publishArticle(
         type: "ARTICLE_PUBLISHED",
         payload: {
           articleId,
+          version: public_version
         },
       },
     });
