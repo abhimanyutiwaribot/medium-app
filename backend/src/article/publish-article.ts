@@ -12,18 +12,6 @@ export async function publishArticle(
     articleId,
     userId
   )
-  
-  if (article.published) {
-    return article;
-  }
-
-  if (!article) {
-    throw new Error("Article not found");
-  }
-
-  if (article.authorId !== userId) {
-    throw new Error("Unauthorized");
-  }
 
   return prisma.$transaction(async (tx) => {
     const public_version = version ?? article.current_version;
@@ -39,6 +27,10 @@ export async function publishArticle(
 
     if(!exists){
       throw new Error("Version does not exist");
+    }
+
+    if(article.published && article.published_version === public_version){
+      return article;
     }
 
     const publishedArticle = await tx.article.update({
