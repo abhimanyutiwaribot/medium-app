@@ -8,7 +8,6 @@ import { getArticleVersion } from "../article/get-article-version";
 import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
-import { articleOwnership } from "../article/article-ownership";
 
 
 const article = new Hono<{
@@ -20,6 +19,13 @@ const article = new Hono<{
     userId: string
   }
 }>;
+
+article.onError((err, c) => {
+  console.error('Error', err);
+  return c.json({
+    error: "Internal Server Error"
+  }, 500)
+})
 
 
 article.use("*", authMiddleware)
@@ -52,7 +58,7 @@ article.post('/article', async (c) => {
 
 
 //update article
-article.put("/:id", async(c) => {
+article.put("/edit/:id", async(c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
     const articleId = c.req.param("id");
