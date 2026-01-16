@@ -28,11 +28,12 @@ model UserModel {
 }
 
 model Article {
-  id              String   @id @default(uuid())
-  authorId        String
-  published       Boolean  @default(false)
-  published_At    DateTime @default(now())
-  current_version Int
+  id                String   @id @default(uuid())
+  authorId          String
+  published         Boolean  @default(false)
+  published_At      DateTime @default(now())
+  current_version   Int
+  published_version Int?
 
   author    UserModel        @relation(fields: [authorId], references: [id])
   versions  ArticleVersion[]
