@@ -1,22 +1,17 @@
 import { PrismaDB } from "../types/prisma";
+import { articleOwnership } from "./article-ownership";
 
 export async function getArticleVersions(
   prisma: PrismaDB,
-  articleId: string
+  articleId: string,
+  userId: string
 ){
 
-  const article = await prisma.article.findUnique({
-    where:{
-      id: articleId
-    },
-    select:{
-      id: true
-    },
-  });
-
-  if(!article){
-    throw new Error("Article Not found");
-  }
+  const article = await articleOwnership(
+    prisma,
+    articleId,
+    userId
+  )
 
   return await prisma.articleVersion.findMany({
     where:{

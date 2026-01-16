@@ -1,10 +1,18 @@
 import { PrismaDB } from "../types/prisma";
+import { articleOwnership } from "./article-ownership";
 
 export async function getArticleVersion(
   prisma: PrismaDB,
   articleId: string,
-  version: number
+  version: number,
+  userId: string
 ){
+  const article = await articleOwnership(
+    prisma,
+    articleId,
+    userId
+  )
+  
   const articleVersion = await prisma.articleVersion.findUnique({
     where:{
       articleId_version:{
