@@ -9,7 +9,6 @@ import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
 import { articleOwnership } from "../article/article-ownership";
-// import { resolve } from "node:dns";
 
 
 const article = new Hono<{
@@ -26,7 +25,7 @@ const article = new Hono<{
 article.use("*", authMiddleware)
 
 
-
+//create article
 article.post('/article', async (c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
@@ -88,38 +87,41 @@ article.put("/:id", async(c) => {
 // })
 
 
-
+//see article
 article.get("/:id", async(c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
     const articleId = c.req.param("id");
-
+    const userId = c.get('userId')
     const articleData = await getArticle(
-      prisma, articleId
+      prisma, articleId, userId
     );
 
     return c.json(articleData);
 });
 
 
-
+//see article versions
 article.get("/:id/versions", async (c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
     const articleId = c.req.param("id");
+    const userId = c.get('userId')
 
     const versions = await getArticleVersions(
       prisma,
-      articleId
+      articleId,
+      userId
     );
 
     return c.json(versions);
 });
 
 
-
+// see article version's version 
 article.get("/:id/versions/:version", async (c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
     const articleId = c.req.param("id");
     const version = Number(c.req.param("version"));
+    const userId = c.get('userId')
 
     if(Number.isNaN(version)){
       return c.json({
@@ -130,13 +132,14 @@ article.get("/:id/versions/:version", async (c) => {
     const data = await getArticleVersion(
       prisma,
       articleId,
-      version
+      version,
+      userId
     );
 
     return c.json(data);
 });
 
-
+// publish the article
 article.post("/:id/publish", async(c) => {
   const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
