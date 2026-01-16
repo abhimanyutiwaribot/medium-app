@@ -4,6 +4,7 @@ import article from './routes/article-routes'
 import { cors } from 'hono/cors'
 // import { resolve } from 'node:dns'
 import image from './routes/image-route'
+import feed from './routes/feed-routes'
 const app = new Hono()
 
 app.use("*", cors({
@@ -33,7 +34,7 @@ app.get('/api/v1/health', (c) => {
 app.route('/api/v1/user', user);
 app.route('/api/v1/q', article);
 app.route('/api/v1/image', image);
-
+app.route('/api/v1/a', feed)
 
 
 export default app
