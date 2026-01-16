@@ -8,6 +8,7 @@ import { getArticleVersion } from "../article/get-article-version";
 import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
+import { articleOwnership } from "../article/article-ownership";
 // import { resolve } from "node:dns";
 
 
@@ -142,15 +143,20 @@ article.post("/:id/publish", async(c) => {
   const articleId = c.req.param("id");
   const userId = c.get('userId');
 
+  const body = await c.req.json().catch(() => {});
+  const { version } = body;
+
   const result = await publishArticle(
     prisma,
     articleId,
-    userId
+    userId,
+    version
   );
 
   return c.json({
     articleId: result.id,
     published: result.published,
+    published_version: result.published_version,
     published_At: result.published_At,
   })
 })
