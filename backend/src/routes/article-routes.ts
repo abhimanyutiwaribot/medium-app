@@ -8,6 +8,10 @@ import { getArticleVersion } from "../article/get-article-version";
 import { publishArticle } from "../article/publish-article";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medium-app-validation";
+import { articleOwnership } from "../article/article-ownership";
+import { getArticleDiff } from "../article/article-diff";
+import { getArticleForEdit } from "../article/get-article-for-edit";
+import { getDraftArticles } from "../article/get-draft-articles";
 
 
 const article = new Hono<{
@@ -50,14 +54,15 @@ article.post('/article', async (c) => {
       prisma,
       userId,
       body.title,
-      body.content
+      body.content_markdown,
+      body.content_json
     )
     
     return c.json(articleCreate);
 });
 
 
-//update article
+//edit article
 article.put("/edit/:id", async(c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
@@ -77,11 +82,28 @@ article.put("/edit/:id", async(c) => {
       articleId,
       userId,
       body.title,
-      body.content
+      body.content_markdown,
+      body.content_json
     )
     
     return c.json(result);
 })
+
+
+//get article for edit
+article.get("/edit/:id", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get("userId");
+
+  const data = await getArticleForEdit(
+    prisma,
+    articleId,
+    userId
+  );
+
+  return c.json(data);
+});
 
 
 
@@ -152,8 +174,8 @@ article.post("/:id/publish", async(c) => {
   const articleId = c.req.param("id");
   const userId = c.get('userId');
 
-  const body = await c.req.json().catch(() => {});
-  const { version } = body;
+  const body = await c.req.json().catch(() => ({}));
+  const version = body.version;
 
   const result = await publishArticle(
     prisma,
@@ -168,6 +190,44 @@ article.post("/:id/publish", async(c) => {
     published_version: result.published_version,
     published_At: result.published_At,
   })
+})
+
+// diff i.e comparison between two article versions
+article.get("/:id/diff", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL)
+  const articleId = c.req.param("id");
+  const userId = c.get("userId");
+
+  const from = Number(c.req.query("from"));
+  const to = Number(c.req.query("to"));
+
+  if(!from || !to || from >= to){
+    return c.json({
+      error: "Invalid diff range"
+    }, 400);
+  }
+
+  const diffData = await getArticleDiff(
+    prisma,
+    articleId,
+    userId,
+    from,
+    to
+  )
+  
+  return c.json(diffData)
+})
+
+article.get("/article/drafts", async(c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const userId = c.get("userId");
+
+  const drafts = await getDraftArticles(
+    prisma,
+    userId
+  )
+  
+  return c.json(drafts);
 })
 
 export default article;
