@@ -67,6 +67,7 @@ model ArticleVersion {
   version      Int
   title        String
   content      String
+  content_json Json?
   wordCount    Int
   createdAt    DateTime @default(now())
   article      Article @relation(fields: [articleId], references: [id])
