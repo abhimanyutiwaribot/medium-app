@@ -1,26 +1,70 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import EditorCanvas from "../components/editor/editor-canvas";
 import { editorJsToMarkdown } from "../utils/markdown";
 import { apifetch } from "../api/client";
 
 export default function Editor() {
+  const navigate = useNavigate();
+  const { id } = useParams(); 
+  const isEditMode = Boolean(id);
+  const [currentVersion, setCurrentVersion ] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState<any>(null);
+  const [initialData, setInitialData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  async function saveDraft(){
-    if(!title || !content) return;
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    setLoading(true);
+
+    apifetch(`/q/edit/${id}`, { method: "GET" })
+      .then((data) => {
+        setTitle(data.title);
+        setInitialData(data.content_json);
+        setCurrentVersion(data.current_version);
+      })
+      .finally(() => setLoading(false));
+  }, [id, isEditMode]);
+
+  async function saveDraft() {
+    if (!title || !content) return;
 
     const markdown = editorJsToMarkdown(content);
 
-    await apifetch("/q/article", {
-      method: "POST",
-      body: JSON.stringify({
-        title,
-        content: markdown,
-      })
-    });
+    if (isEditMode) {
+      await apifetch(`/q/edit/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title,
+          content_markdown: markdown,
+          content_json: content,
+        }),
+      });
+    } else {
+      await apifetch("/q/article", {
+        method: "POST",
+        body: JSON.stringify({
+          title,
+          content_markdown: markdown,
+          content_json: content,
+        }),
+      });
+    }
+    navigate(`/article/drafts`)
+  }
 
-    alert("Draft saved !!");
+  async function publishArticle(){
+    await apifetch(`/q/${id}/publish`, {
+      method: "POST",
+    })
+    navigate('/');
+    alert("Article published!")
+  }
+
+  if (isEditMode && loading) {
+    return <div className="p-6">Loading draft…</div>;
   }
 
   return (
@@ -33,15 +77,34 @@ export default function Editor() {
           lg:max-w-3xl
         "
       >
+        {isEditMode && currentVersion !== null && (
+          <div
+            className="mb-2 text-sm text-gray-500 flex gap-2 items-center">
+            <span>
+              Editing based on version {currentVersion}
+            </span>
+
+            {currentVersion > 1 && (
+              <a
+                href={`/article/${id}/diff?from=${currentVersion - 1}&to=${currentVersion}`}
+                target="_blank"
+                className="text-blue-600 underline"
+              >
+                Compare with previous
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Title */}
         <textarea
           name="title-area"
           placeholder="Title"
-          onInput= {(e)=> {
+          onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;
-            target.style.height = 'auto';
+            target.style.height = "auto";
             target.style.height = `${target.scrollHeight}px`;
           }}
-
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="
@@ -52,19 +115,33 @@ export default function Editor() {
             bg-transparent
             text-xl
             sm:text-2xl
-            sm:px-0
             lg:text-3xl
           "
         />
-        <div>
-          <EditorCanvas onChange={setContent} />
-        </div>
-        
+
+        {/* Editor */}
+        <EditorCanvas
+          initialData={initialData}
+          onChange={setContent}
+        />
       </div>
 
-      <button onClick={saveDraft} className="mt-6 bg-black text-white px-4 py-2 rounded">
-        Save Draft
-      </button>
+      {/* Actions */}
+      <div className="max-w-3xl mx-auto px-4">
+        <button
+          onClick={saveDraft}
+          className="mt-6 bg-white text-black px-4 py-2 rounded"
+        >
+          Save Draft
+        </button>
+      {isEditMode && 
+        (<button
+          onClick={publishArticle}
+          className="ml-3 bg-black text-white px-4 py-2 rounded">
+          Publish
+        </button>
+        )}
+      </div>
     </div>
   );
 }
