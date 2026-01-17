@@ -1,37 +1,31 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { apifetch } from "../api/client";
 import ArticleRenderer from "../components/article/article-renderer";
-// import { apiFetch } from "../api/client";
-// import ArticleRenderer from "../components/article/ArticleRenderer";
+
 
 export default function Article() {
   const { id } = useParams();
-  const [params] = useSearchParams();
-  const version = params.get("version");
-
   const [data, setData] = useState<any>(null);
-
   useEffect(() => {
     async function fetchArticle() {
-      const query = version ? `?version=${version}` : "";
-      const res = await apifetch(`/q/${id}${query}`);
+      const res = await apifetch(`/a/article/${id}`);
       setData(res);
     }
 
     fetchArticle();
-  }, [id, version]);
+  }, [id]);
 
-  if (!data) return <div>Loading...</div>;
+  if (!data) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-tranparent">
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="text-sm text-gray-500 mb-2">
-          Version {data.currentVersion}
+          Version {data.version}
         </div>
 
-        <h1 className="text-4xl font-bold mb-8">
+        <h1 className="text-4xl font-normal font-serif mb-6">
           {data.title}
         </h1>
 
