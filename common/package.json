@@ -1,11 +1,11 @@
 {
   "name": "@abhimanyutiwaribot/medium-app-validation",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc" 
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
