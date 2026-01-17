@@ -5,9 +5,10 @@ export async function createArticle(
 	prisma: PrismaDB,
 	authorId: string,
 	title: string,
-	content: string
+	content_markdown: string,
+	content_json: any
 ) {
-	const wordCount = content.trim().split(/\s+/).length;
+	const wordCount = content_markdown.trim().split(/\s+/).length;
 	return await prisma.$transaction(async(tx) =>{
 		const article = await tx.article.create({
 			data:{
@@ -23,7 +24,8 @@ export async function createArticle(
 				articleId: article.id,
 				version: 1,
 				title,
-				content,
+				content: content_markdown,
+				content_json,
 				wordCount
 			}
 		})
@@ -38,6 +40,8 @@ export async function createArticle(
 				}
 			}
 		})
+
+		// console.log(content_json)
 
 		return article;
 	});
