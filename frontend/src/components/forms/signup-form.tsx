@@ -20,7 +20,7 @@ export default function SignupForm(){
         });
   
         setToken(res.token);
-        navigate("/editor");
+        navigate("/");
       } catch (err: any) {
         alert(err.error || "Signup failed");
       }
