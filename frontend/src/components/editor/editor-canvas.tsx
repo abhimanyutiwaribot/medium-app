@@ -7,9 +7,10 @@ import { useEffect, useRef } from "react";
 
 type Props = {
   onChange: (data: any) => void;
+  initialData?: any
 }
 
-export default function EditorCanvas({ onChange }: Props) {
+export default function EditorCanvas({ onChange , initialData}: Props) {
   const editorRef = useRef<EditorJS | null>(null);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function EditorCanvas({ onChange }: Props) {
     const editor = new EditorJS({
       holder: "editorjs",
       placeholder: "Tell what's on your mind....",
+      data: initialData,
       tools: {
         header: Header,
         List: {
