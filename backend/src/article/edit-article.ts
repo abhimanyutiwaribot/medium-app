@@ -6,51 +6,63 @@ export async function editArticle(
   articleId: string,
   userId: string,
   title: string,
-  content: string
+  content_markdown: string,
+  content_json: any
 ) {
-    const article = await articleOwnership(
-      prisma,
-      articleId,
-      userId
-    );
+  const article = await articleOwnership(
+    prisma,
+    articleId,
+    userId
+  );
 
-    const wordCount = content.trim().split(/\s+/).length;
-    const nextVersion = article.current_version + 1;
-  
-    return await prisma.$transaction(async (tx) => {
-        await tx.articleVersion.create({
-          data:{
-            articleId,
-            version: nextVersion,
-            title,
-            content,
-            wordCount,
-          }
-        });
+  if (article.published) {
+    throw new Error("Cannot edit a published article. Create a new draft instead.");
+  }
 
-        await tx.article.update({
-          where: {
-            id: articleId
-          },
-          data:{
-            current_version: nextVersion
-          }
-        })
+  // console.log(content_markdown)
+  const wordCount = content_markdown.trim().split(/\s+/).length;
+  const nextVersion = article.current_version + 1;
 
-        await tx.events.create({
-          data:{
-            userId: article.authorId,
-            type: "ARTICLE_VERSION_CREATED",
-            payload: {
-              articleId,
-              version: nextVersion
-            }
-          }
-        })
+  return await prisma.$transaction(async (tx) => {
+    await tx.articleVersion.create({
+      data: {
+        articleId,
+        version: nextVersion,
+        title,
+        content: content_markdown,
+        content_json,
+        wordCount,
+      }
+    });
 
-        return {
-          articleId,
+    await tx.article.update({
+      where: {
+        id: articleId
+      },
+      data: {
+        current_version: nextVersion
+      },
+      select: {
+        current_version: true
+      }
+    })
+
+    await tx.events.create({
+      data: {
+        userId: article.authorId,
+        type: "ARTICLE_VERSION_CREATED",
+        payload: {
+          articleId,  
           version: nextVersion
         }
-    });
+      }
+    })
+
+    return {
+      articleId,
+      version: nextVersion,
+      updatedAt: new Date(),
+      wordCount
+    }
+  });
 }
