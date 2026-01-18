@@ -5,7 +5,8 @@ export async function publishArticle(
   prisma: PrismaDB,
   articleId: string,
   userId: string,
-  version?: number
+  version?: number,
+  theme?: string,
 ) {
   const article = await articleOwnership(
     prisma,
@@ -15,7 +16,7 @@ export async function publishArticle(
 
   return prisma.$transaction(async (tx) => {
     const public_version = version ?? article.current_version;
-
+    
     const exists = await tx.articleVersion.findUnique({
       where:{
         articleId_version:{
@@ -39,6 +40,7 @@ export async function publishArticle(
         published: true,
         published_version: public_version,
         published_At: new Date(),
+        theme,
       },
     });
 
