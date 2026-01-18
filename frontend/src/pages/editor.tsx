@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import EditorCanvas from "../components/editor/editor-canvas";
 import { editorJsToMarkdown } from "../utils/markdown";
@@ -6,13 +6,22 @@ import { apifetch } from "../api/client";
 
 export default function Editor() {
   const navigate = useNavigate();
-  const { id } = useParams(); 
+  const { id } = useParams();
   const isEditMode = Boolean(id);
-  const [currentVersion, setCurrentVersion ] = useState<number | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState<any>(null);
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+
+  const handleEditorChange = useCallback((data: any) => {
+    if (isEditMode && !hasLoadedInitialData) return;
+
+    setContent(data);
+    setIsSaved(true);
+  }, [hasLoadedInitialData, isEditMode])
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -24,12 +33,18 @@ export default function Editor() {
         setTitle(data.title);
         setInitialData(data.content_json);
         setCurrentVersion(data.current_version);
+        setIsSaved(false);
+        setHasLoadedInitialData(true)
       })
       .finally(() => setLoading(false));
   }, [id, isEditMode]);
 
   async function saveDraft() {
-    if (!title || !content) return;
+    if (!title || !content){
+      alert("Please add a title and some content");
+      return;
+    } 
+      
 
     const markdown = editorJsToMarkdown(content);
 
@@ -42,6 +57,8 @@ export default function Editor() {
           content_json: content,
         }),
       });
+      alert("article has been saved as draft you can preview")
+      // navigate(``)
     } else {
       await apifetch("/q/article", {
         method: "POST",
@@ -51,11 +68,13 @@ export default function Editor() {
           content_json: content,
         }),
       });
+      navigate(`/article/drafts`)
     }
-    navigate(`/article/drafts`)
+    setIsSaved(false);
+    
   }
 
-  async function publishArticle(){
+  async function publishArticle() {
     await apifetch(`/q/${id}/publish`, {
       method: "POST",
     })
@@ -122,7 +141,7 @@ export default function Editor() {
         {/* Editor */}
         <EditorCanvas
           initialData={initialData}
-          onChange={setContent}
+          onChange={handleEditorChange}
         />
       </div>
 
@@ -134,12 +153,26 @@ export default function Editor() {
         >
           Save Draft
         </button>
-      {isEditMode && 
-        (<button
-          onClick={publishArticle}
-          className="ml-3 bg-black text-white px-4 py-2 rounded">
-          Publish
-        </button>
+        {isEditMode && (
+          <div>
+            <button
+              onClick={publishArticle}
+              className="ml-3 bg-black text-white px-4 py-2 rounded">
+              Publish
+            </button>
+            <button
+              disabled={isSaved}
+              title={isSaved ?  "Save draft to preview" : ""} 
+              onClick={() => navigate(`/article/${id}/preview`)}
+              className={`ml-3 bg-slate-800 text-white border px-4 py-2 rounded ${
+                isSaved
+                  ? "opacity-50 cursor-not-allowed"
+                  : "border"              
+              }`}
+            >
+              Preview
+            </button>
+          </div>
         )}
       </div>
     </div>
