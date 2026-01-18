@@ -34,6 +34,7 @@ model Article {
   published_At      DateTime @default(now())
   current_version   Int
   published_version Int?
+  theme             String?
 
   author    UserModel        @relation(fields: [authorId], references: [id])
   versions  ArticleVersion[]
