@@ -16,6 +16,7 @@
     "@editorjs/header": "^2.8.8",
     "@editorjs/image": "^2.10.3",
     "@editorjs/list": "^2.0.9",
+    "@editorjs/nested-list": "^1.4.3",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^4.42.0",
     "diff": "^8.0.3",
@@ -26,6 +27,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.12.0",
     "rehype-highlight": "^7.0.2",
+    "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "zod": "^4.3.5"
   },
