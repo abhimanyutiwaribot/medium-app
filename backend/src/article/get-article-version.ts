@@ -12,6 +12,10 @@ export async function getArticleVersion(
     articleId,
     userId
   )
+
+  if(!article){
+    return new Error("Article not found");
+  }
   
   const articleVersion = await prisma.articleVersion.findUnique({
     where:{
