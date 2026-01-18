@@ -33,6 +33,7 @@ export async function getArticleForEdit(
     articleId,
     current_version: article.current_version,
     title: version.title,
+    content_markdown: version.content,
     content_json: version.content_json,
   };
 }
