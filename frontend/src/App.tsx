@@ -12,6 +12,7 @@ import HomePage from './pages/home'
 import ArticleVersion from './pages/article-version'
 import Layout from './components/layout'
 import DraftsPage from './pages/draft-articles'
+import ArticlePreviewPage from './pages/article-preview'
 // import ArticleDiffPage from './components/diff/diff-function'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -31,11 +32,9 @@ function App() {
           <Route path="/signup" element={<Signup />} /> {/* the signup page */}
           <Route path="/signin" element={<Signin />} />  {/* the signin page */}
 
-          <Route path="/article/:id" 
+          <Route path="/article/:id"
             element={
-            <Layout>
               <Article />
-            </Layout>
             } /> {/* the article renderer page based on articleId */}
 
           {/* <Route 
@@ -49,9 +48,18 @@ function App() {
 
           <Route
             path='/article/drafts'
-            element= {
+            element={
               <ProtectedRoute>
                 <DraftsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='/article/:id/preview'
+            element={
+              <ProtectedRoute>
+                <ArticlePreviewPage />
               </ProtectedRoute>
             }
           />
@@ -89,7 +97,7 @@ function App() {
 
           <Route
             path="/"
-            element= {
+            element={
               <Layout>
                 <HomePage />
               </Layout>
