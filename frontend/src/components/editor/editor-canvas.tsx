@@ -2,7 +2,7 @@ import CodeTool from "@editorjs/code";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import ImageTool from "@editorjs/image";
-import EditorjsList from "@editorjs/list";
+import List from "@editorjs/list";
 import { useEffect, useRef } from "react";
 
 type Props = {
@@ -22,11 +22,11 @@ export default function EditorCanvas({ onChange , initialData}: Props) {
       data: initialData,
       tools: {
         header: Header,
-        List: {
-          class: EditorjsList,
+        list: {
+          class: List,
+          inlineToolbar: true,
           config: {
-            defaultStyle: 'unordered',
-            allowedStyles: ['unordered', 'ordered']
+            defaultStyle: 'unordered'
           }
         },
         code: CodeTool,
