@@ -176,12 +176,14 @@ article.post("/:id/publish", async(c) => {
 
   const body = await c.req.json().catch(() => ({}));
   const version = body.version;
+  const theme = body.theme;
 
   const result = await publishArticle(
     prisma,
     articleId,
     userId,
-    version
+    version,
+    theme
   );
 
   return c.json({
