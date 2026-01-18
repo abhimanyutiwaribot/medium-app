@@ -52,12 +52,14 @@ feed.get("/article/:id", async (c) => {
       title: string;
       content: string;
       version: number;
+      theme: string | null;
     }[]
   >`
     SELECT
       v.title,
       v.content,
-      v.version
+      v.version,
+      a.theme
     FROM "Article" a
     JOIN "ArticleVersion" v
       ON v."articleId" = a.id
