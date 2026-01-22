@@ -16,74 +16,73 @@ type FeedItem = {
 export default function HomePage() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
   useEffect(() => {
     apifetch("/a")
       .then((res) => res.items ?? res.data ?? res)
       .then(setItems)
+      .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div className="p-6">Loading feed…</div>;
+    return (
+      <div className="min-h-screen bg-[#0f1115] text-[#8a8d91] font-mono p-12">
+        Loading feed...
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      {isAuthenticated && (
-        <div className="mb-8 border-b pb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            Welcome back 👋
-          </h2>
+    <div className="min-h-screen bg-[#111216] text-[#8a8d91] font-serif font-normal p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
 
-          <div className="flex gap-4">
-            <Link
-              to="/editor"
-              className="px-4 py-2 bg-black text-white rounded text-sm"
-            >
-              Continue writing
-            </Link>
-
-            <Link
-              to="/article/drafts"
-              className="px-4 py-2 border rounded text-sm"
-            >
-              Your drafts
-            </Link>
-          </div>
+        {/* Section Header */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#4a4d52]" />
+          <h1 className="text-xl italic tracking-tight text-[#dedede]">latest articles</h1>
         </div>
-      )}
 
+        {/* Tree Container */}
+        <div className="relative ml-[3px]">
+          {/* Main Vertical Stem */}
+          <div className="absolute left-0 top-0 bottom-10 w-[1px] bg-[#2a2d32]" />
 
-      <h1 className="text-2xl font-semibold mb-6">
-        Latest Articles
-      </h1>
+          {items.map((item) => (
+            <div key={item.id} className="relative group flex items-start h-24">
 
-      {items.length === 0 && (
-        <div className="text-gray-500">
-          No articles published yet.
-        </div>
-      )}
+              <svg
+                className="absolute left-0 top-0 w-10 h-full text-[#2a2d32] group-hover:text-[#4a4d52] transition-colors"
+                viewBox="0 0 40 40"
+                fill="none"
+              >
+                <path
+                  d="M1.8 17H35" // Straight down to 20, straight right to 35
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  shapeRendering="crispEdges"
+                />
+              </svg>
 
-      <div className="space-y-6">
-        {items.map((item) => (
-          <Link
-            key={item.id}
-            to={`/article/${item.id}`}
-            className="block border-b pb-4 hover:bg-gray-50 transition"
-          >
-            <h2 className="text-xl font-medium">
-              {item.title}
-            </h2>
+              {/* The Dot at the end of the branch */}
+              <div className="absolute left-[35px] top-[42px] w-1.5 h-1.5 rounded-full bg-[#4a4d52] group-hover:bg-white transition-all shadow-[0_0_8px_rgba(255,255,255,0)] group-hover:shadow-[0_0_10px_white]" />
 
-            <div className="text-sm text-gray-500 mt-1">
-              By {item.author.name ?? item.author.username}
-              {" · "}
-              {item.readingTime} min read
+              {/* Text Content */}
+              <Link
+                to={`/article/${item.id}`}
+                className="ml-14 mt-8 flex flex-col md:flex-row md:items-baseline gap-2"
+              >
+                <h2 className="text-[18px] text-[#d1d1d1] group-hover:text-white transition-colors leading-snug">
+                  {item.title}
+                </h2>
+                <div className="flex items-center gap-2 text-xs text-[#4a4d52] whitespace-nowrap">
+                  <span>. . . . by</span>
+                  <span className="text-[#6a6d72] italic group-hover:text-gray-300">@{item.author.username}</span>
+                </div>
+              </Link>
             </div>
-          </Link>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
