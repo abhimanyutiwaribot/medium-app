@@ -43,6 +43,7 @@
 .ce-paragraph {
   font-size: 1rem;
   line-height: 1.5;
+  font-family: serif;
 }
 
 @media (min-width: 640px) {
@@ -109,8 +110,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  background: transparent;
+  border: none;
 }
-  
+
+.ce-toolbar__plus:hover,
+.ce-toolbar__settings-btn:hover {
+  color: white !important;
+  background-color: #333 !important;
+}
+
+.ce-block--selected .ce-block__content {
+    background: transparent;
+}
 
 @media (min-width: 640px) {
   .ce-toolbar__plus,
