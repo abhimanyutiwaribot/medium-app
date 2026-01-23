@@ -20,10 +20,10 @@ export default function DraftsPage() {
   }, []);
 
   async function publishDraft(articleId: string){
-    await apifetch(`/q/${articleId}/publish`, {
-      method: "POST",
-    });
-    navigate(`/`);
+    // await apifetch(`/q/${articleId}/publish`, {
+    //   method: "POST",
+    // });
+    navigate(`/article/${articleId}/preview`);
     // alert("published!!!")
     setDrafts((prev) => 
       prev.filter((d) => d.id !== articleId)
@@ -63,7 +63,7 @@ export default function DraftsPage() {
                 onClick={() => publishDraft(draft.id)}
                 className="text-blue-600 text-sm"
               >
-                Publish
+                Preview and Publish
               </button>
 
               <button

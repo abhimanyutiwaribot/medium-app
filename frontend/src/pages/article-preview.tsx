@@ -81,7 +81,7 @@ export default function ArticlePreviewPage() {
 
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-4xl font-normal font-serif mb-6">
+        <h1 className="text-4xl font-normal font-comic mb-6">
           {title}
         </h1>
         <ArticleRenderer content={content} />

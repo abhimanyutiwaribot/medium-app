@@ -128,7 +128,7 @@ export default function Editor() {
           onChange={(e) => setTitle(e.target.value)}
           className="
             no-scrollbar
-            font-serif
+            font-comic
             w-full outline-none font-normal
             resize-none 
             bg-transparent

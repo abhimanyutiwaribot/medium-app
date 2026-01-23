@@ -55,7 +55,7 @@ export default function Article() {
           Version {data.version}
         </div>
 
-        <h1 className="text-4xl font-normal font-serif mb-6">
+        <h1 className="text-4xl font-normal font-comic mb-6">
           {data.title}
         </h1>
 

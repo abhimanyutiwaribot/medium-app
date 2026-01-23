@@ -8,7 +8,7 @@ export default function Signup() {
       <br />
       <SignupForm/>
       <br />
-      <div className="font-serif font-normal">
+      <div className="font-comic font-normal">
         <p>Already have an account?
           <a href="/signin" className="underline underline-offset-1">Sign in</a>
         </p> 

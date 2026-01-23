@@ -27,29 +27,29 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f1115] text-[#8a8d91] font-mono p-12">
+      <div className="min-h-screen  text-[#8a8d91] font-mono p-12">
         Loading feed...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#111216] text-[#8a8d91] font-serif font-normal p-6 md:p-12">
+    <div className="min-h-screen  text-[#8a8d91] font-comic font-normal p-6 md:p-12">
       <div className="max-w-4xl mx-auto">
 
         {/* Section Header */}
         <div className="flex items-center gap-3 mb-2">
           <div className="w-1.5 h-1.5 rounded-full bg-[#4a4d52]" />
-          <h1 className="text-xl italic tracking-tight text-[#dedede]">latest articles</h1>
+          <h1 className="text-xl font-bold tracking-tight text-[#dedede]">latest articles</h1>
         </div>
 
         {/* Tree Container */}
         <div className="relative ml-[3px]">
           {/* Main Vertical Stem */}
-          <div className="absolute left-0 top-0 bottom-10 w-[1px] bg-[#2a2d32]" />
+          <div className="absolute left-0 top-0 bottom-6 w-[1px] bg-[#2a2d32]" />
 
           {items.map((item) => (
-            <div key={item.id} className="relative group flex items-start h-24">
+            <div key={item.id} className="relative group flex items-start h-20">
 
               <svg
                 className="absolute left-0 top-0 w-10 h-full text-[#2a2d32] group-hover:text-[#4a4d52] transition-colors"
@@ -57,9 +57,9 @@ export default function HomePage() {
                 fill="none"
               >
                 <path
-                  d="M1.8 17H35" // Straight down to 20, straight right to 35
+                  d="M1 25H35" // Straight down to 20, straight right to 35
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1"
                   shapeRendering="crispEdges"
                 />
               </svg>
