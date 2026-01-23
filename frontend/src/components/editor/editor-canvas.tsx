@@ -33,6 +33,9 @@ export default function EditorCanvas({ onChange , initialData}: Props) {
         image: {
           class: ImageTool,
           config: {
+            features: {
+              stretched: true
+            },
             uploader: {
               async uploadByFile(file: File) {
                 const signRes = await fetch("http://localhost:8787/api/v1/image/sign", {
@@ -85,6 +88,6 @@ export default function EditorCanvas({ onChange , initialData}: Props) {
     };
   }, [onChange])
 
-  return <div id="editorjs" className="prose max-w-none" />;
+  return <div id="editorjs" className=" max-w-none" />;
 
 }
