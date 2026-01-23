@@ -11,63 +11,83 @@ export default function ArticleRenderer({ content }: { content: string }) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeRaw]}
         components={{
+           // Headings with better hierarchy and spacing
           h1: ({ children }) => (
-            <h1 className="text-4xl font-bold mt-8 mb-4">{children}</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mt-12 mb-6 leading-tight text-gray-900 first:mt-0">
+              {children}
+            </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-3xl font-semibold mt-6 mb-3">{children}</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-10 mb-5 leading-tight text-gray-900">
+              {children}
+            </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-2xl font-semibold mt-4 mb-2">{children}</h3>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-8 mb-4 leading-snug text-gray-900">
+              {children}
+            </h3>
           ),
           h4: ({ children }) => (
-            <h4 className="text-xl font-semibold mt-4 mb-2">{children}</h4>
+            <h4 className="text-lg sm:text-xl lg:text-2xl font-semibold mt-6 mb-3 leading-snug text-gray-800">
+              {children}
+            </h4>
           ),
           h5: ({ children }) => (
-            <h5 className="text-lg font-semibold mt-4 mb-2">{children}</h5>
+            <h5 className="text-base sm:text-lg lg:text-xl font-semibold mt-6 mb-3 leading-normal text-gray-800">
+              {children}
+            </h5>
           ),
           h6: ({ children }) => (
-            <h6 className="font-semibold mt-4 mb-2">{children}</h6>
+            <h6 className="text-base sm:text-lg font-semibold mt-6 mb-3 leading-normal text-gray-300">
+              {children}
+            </h6>
           ),
 
+          // Paragraphs with optimal reading width and spacing
           p: ({ children }) => (
-            <p className="my-4 leading-relaxed">{children}</p>
+            <p className="text-base sm:text-lg leading-relaxed mb-6 text-gray-400">
+              {children}
+            </p>
           ),
 
+          // Text formatting
           strong: ({ children }) => (
-            <strong className="font-bold">{children}</strong>
+            <strong className="font-bold text-gray-900">{children}</strong>
           ),
 
           em: ({ children }) => (
-            <em className="italic">{children}</em>
+            <em className="italic text-gray-800">{children}</em>
           ),
 
           del: ({ children }) => (
-            <del className="line-through">{children}</del>
+            <del className="line-through text-gray-500">{children}</del>
           ),
 
           mark: ({ children }) => (
-            <mark className="bg-yellow-200 px-1">{children}</mark>
+            <mark className="bg-yellow-200 px-1 rounded">{children}</mark>
           ),
 
+          // Blockquotes with better styling
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4">
+            <blockquote className="border-l-4 border-blue-500 bg-blue-50 pl-6 pr-4 py-4 my-6 italic text-gray-300 rounded-r">
               {children}
             </blockquote>
           ),
 
+          // Lists with better spacing and readability
           ul: ({ children }) => (
-            <ul className="list-disc pl-6 my-4 space-y-1">{children}</ul>
+            <ul className="list-disc pl-6 my-6 space-y-3 text-gray-300">
+              {children}
+            </ul>
           ),
 
           ol: ({ children, className, style }: any) => {
-            // Extract counter type from className or style
             const counterTypeMatch = className?.match(/list-counter-(\S+)/);
             const counterType = counterTypeMatch?.[1] || style?.listStyleType || 'decimal';
             
             return (
               <ol 
-                className={`pl-6 my-4 space-y-1`}
+                className="pl-6 my-6 space-y-3 text-gray-300"
                 style={{ listStyleType: counterType }}
               >
                 {children}
@@ -76,11 +96,14 @@ export default function ArticleRenderer({ content }: { content: string }) {
           },
 
           li: ({ children }) => (
-            <li className="leading-relaxed">{children}</li>
+            <li className="text-base sm:text-lg leading-relaxed">
+              {children}
+            </li>
           ),
 
+          // Code blocks with better contrast and scrolling
           pre: ({ children }) => (
-            <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 my-6 overflow-x-auto">
+            <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 sm:p-6 my-8 overflow-x-auto shadow-lg border border-gray-700">
               {children}
             </pre>
           ),
@@ -88,38 +111,54 @@ export default function ArticleRenderer({ content }: { content: string }) {
           code: ({ inline, className, children }: {inline?: boolean, className?: string, children?: React.ReactNode}) => {
             if (inline) {
               return (
-                <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-red-600">
+                <code className="bg-gray-100 px-2 py-0.5 rounded text-sm font-mono text-red-600 border border-gray-200">
                   {children}
                 </code>
               );
             }
 
             return (
-              <code className={`font-mono text-sm ${className ?? ""}`}>
+              <code className={`font-mono text-sm sm:text-base ${className ?? ""}`}>
                 {children}
               </code>
             );
           },
 
+          // Images with captions and better sizing
           img: ({ src, alt }) => {
             if (!src) return null;
             return (
-              <img
-                src={src}
-                alt={alt ?? ""}
-                className="rounded-lg my-6 max-w-full"
-              />
+              <figure className="my-8 mx-auto max-w-2xl">
+                <img
+                  src={src}
+                  alt={alt ?? ""}
+                  className="rounded-lg w-full h-auto max-h-96 object-contain shadow-md"
+                  loading="lazy"
+                />
+                {alt && (
+                  <figcaption className="text-sm text-gray-500 mt-2 text-center italic">
+                    {alt}
+                  </figcaption>
+                )}
+              </figure>
             );
           },
 
+          // Links with better visibility
           a: ({ children, href }) => (
-            <a href={href} className="text-blue-600 hover:underline">
+            <a 
+              href={href} 
+              className="text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2 hover:decoration-blue-800 transition-colors"
+              target={href?.startsWith('http') ? '_blank' : undefined}
+              rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
               {children}
             </a>
           ),
 
+          // Horizontal rule
           hr: () => (
-            <hr className="my-8 border-gray-300" />
+            <hr className="my-12 border-t-2 border-gray-200" />
           ),
         }}
       >
