@@ -35,30 +35,30 @@ export default function SignupForm(){
           <input
             placeholder="Email: m@example.com"
             {...form.register("email")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-serif font-normal placeholder:text-slate-800"
+            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
           />
 
           <input
             placeholder="Name"
             {...form.register("name")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-serif font-normal placeholder:text-slate-800"
+            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
           />
 
           <input
             placeholder="Username"
             {...form.register("username")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-serif font-normal placeholder:text-slate-800"
+            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
           />
 
           <input
             type="password"
             placeholder="Password"
             {...form.register("password")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-serif font-normal placeholder:text-slate-800"
+            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
             
           />
 
-          <button className="w-5/6 py-3 hover:bg-gray-300 hover:text-slate-900 rounded-2xl hover:underline bg-black text-white mx-auto block font-serif font-normal transition duration-800 ease-in-out">
+          <button className="w-5/6 py-3 hover:bg-gray-300 hover:text-slate-900 rounded-2xl hover:underline bg-black text-white mx-auto block font-comic font-normal transition duration-800 ease-in-out">
             Sign up &gt;
           </button>
         </form>
