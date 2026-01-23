@@ -1,63 +1,47 @@
-import { Link, useNavigate } from "react-router-dom";
+// navbar.tsx
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
-export default function Navbar() {
-  const navigate = useNavigate();
-  const isAuthenticated = Boolean(
-    localStorage.getItem("token")
-  );
-
-  function logout() {
-    localStorage.removeItem("token");
-    navigate("/signin");
-  }
+export function Navbar() {
+  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
   return (
-    <nav className="border-none">
-      <div className="max-w-full mx-auto px-6 py-4 flex justify-between items-center font-serif font-normal">
-        <div>  {/* todo implement sidebar */}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
+    <nav className="sticky top-0 z-40 border-none border-[#2a2d32]">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+        {/* Left - Sidebar Trigger */}
+        <div className="flex items-center">
+          <SidebarTrigger className="p-2 text-[#dedede] hover:text-white hover:bg-[#1a1d21] rounded-md transition-colors" />
         </div>
-        {/* Left */}
-        <Link to="/" className="text-2xl ">
-          Xedium
-        </Link>
 
-        {/* Right */}
-        <div className="flex items-center gap-6">
-          {!isAuthenticated && (
-            <>
-              <Link to="/signin" className="text-sm">
-                Sign in
-              </Link>
-              <Link
-                to="/signup"
-                className="text-sm border px-3 py-1 rounded"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
+        {/* Center - Logo */}
+        <a href="/" className="absolute left-1/2 transform -translate-x-1/2">
+          <span className="text-2xl font-bold text-white">Xedium</span>
+        </a>
 
-          {isAuthenticated && (
+        {/* Right - Actions */}
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
             <>
-              <Link
-                to="/editor"
-                className="text-sm border rounded-md p-2 bg-emerald-900 text-[#b9c0c9] border-transparent"
+              <a
+                href="/editor"
+                className="text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md transition-colors"
               >
                 + Write
-              </Link>
-
-              <button
-                onClick={logout}     // have to change it to profile picture
-                
+              </a>
+              <div className="h-8 w-8 rounded-full bg-[#2a2d32] flex items-center justify-center">
+                <span className="text-white text-sm">JD</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <a href="/signin" className="text-sm text-[#8a8d91] hover:text-white px-3">
+                Sign in
+              </a>
+              <a
+                href="/signup"
+                className="text-sm bg-white hover:bg-gray-100 text-black px-4 py-2 rounded-md transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-
-              </button>
+                Sign up
+              </a>
             </>
           )}
         </div>
