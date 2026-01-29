@@ -22,11 +22,7 @@ export default function Article() {
   const selectedTheme = data.theme ? THEMES[data.theme as ThemeKey] : null;
 
   return (
-    <div className={`min-h-screen relative ${
-      selectedTheme?.textColor === "light"
-        ? "text-white"
-        : "text-black"
-    }`}>
+    <div className={`min-h-screen relative`}>
       {/* Background */}
       {selectedTheme && (
         <div
@@ -47,11 +43,7 @@ export default function Article() {
 
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className={`text-sm mb-2 ${
-          selectedTheme?.textColor === "light"
-            ? "text-gray-300"
-            : "text-gray-500"
-        }`}>
+        <div className={`text-sm mb-2 `}>
           Version {data.version}
         </div>
 
