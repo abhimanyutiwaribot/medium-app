@@ -13,6 +13,7 @@ import ArticleVersion from './pages/article-version'
 import { Layout } from './components/layout'
 import DraftsPage from './pages/draft-articles'
 import ArticlePreviewPage from './pages/article-preview'
+import Profile from './pages/profile'
 // import ArticleDiffPage from './components/diff/diff-function'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -36,6 +37,8 @@ function App() {
             element={
               <Article />
             } /> {/* the article renderer page based on articleId */}
+
+          <Route path="/profile" element={<Profile />} />
 
           {/* <Route 
             path="/article/:id"
