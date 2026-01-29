@@ -14,11 +14,11 @@ export function Navbar() {
 
         {/* Center - Logo */}
         <a href="/" className="absolute left-1/2 transform -translate-x-1/2">
-          <span className="text-2xl font-bold text-white">Xedium</span>
+          <span className="text-2xl text-white">Xedium</span>
         </a>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-9">
           {isAuthenticated ? (
             <>
               <a
