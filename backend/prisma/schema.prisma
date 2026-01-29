@@ -51,6 +51,15 @@ model WritingStreak {
   user UserModel @relation(fields: [userId], references: [id])
 }
 
+model WritingDay {
+  id     String   @id @default(uuid())
+  userId String
+  date   DateTime
+
+  @@unique([userId, date])
+}
+
+
 model Events {
   id        String   @id @default(uuid())
   userId    String
