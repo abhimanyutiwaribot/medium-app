@@ -15,6 +15,20 @@ export async function updateWritingStreak(
 ){
   const today = toUTCDate(eventDate);
 
+  await prisma.writingDay.upsert({
+    where: {
+      userId_date: {
+        userId,
+        date: today
+      },
+    },
+    update: {},
+    create: {
+      userId,
+      date: today
+    },
+  })
+
   const streak = await prisma.writingStreak.findUnique({
     where:{
       userId
