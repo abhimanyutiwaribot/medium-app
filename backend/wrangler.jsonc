@@ -12,6 +12,9 @@
 			"id": "866aaf331ebc4e97a27285d953f0dfe7"
 		}
 	],
+	"triggers": {
+		"crons": ["*/1 * * * *"]
+	}
 	// "vars": {
 	//   "MY_VAR": "my-variable"
 	// },
