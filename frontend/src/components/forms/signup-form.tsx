@@ -30,12 +30,13 @@ export default function SignupForm(){
       
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full max-w-md space-y-4"
+          className="w-full max-w-md space-y-4 text-black"
         >
           <input
             placeholder="Email: m@example.com"
             {...form.register("email")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
+            className="rounded-2xl border-2 border-black 
+            focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
           />
 
           <input
