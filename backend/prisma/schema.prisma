@@ -20,11 +20,18 @@ model UserModel {
   username  String   @unique
   name      String?
   password  String
+  bio       String?
+  avatar    String?
   createdAt DateTime @default(now())
 
-  article Article[]
-  streak  WritingStreak?
-  events  Events[]
+  article   Article[]
+  streak    WritingStreak?
+  events    Events[]
+  claps     Clap[]
+  bookmarks Bookmark[]
+  
+  followers Follow[] @relation("following")
+  following Follow[] @relation("follower")
 }
 
 model Article {
@@ -38,7 +45,50 @@ model Article {
 
   author    UserModel        @relation(fields: [authorId], references: [id])
   versions  ArticleVersion[]
+  claps     Clap[]
+  bookmarks Bookmark[]
   createdAt DateTime         @default(now())
+}
+
+model ArticleVersion {
+  id           String    @id @default(uuid())
+  articleId    String
+  version      Int
+  title        String
+  content      String
+  content_json Json?
+  wordCount    Int
+  createdAt    DateTime @default(now())
+  article      Article @relation(fields: [articleId], references: [id])
+  @@unique([articleId, version])
+}
+
+model Clap {
+  id        String   @id @default(uuid())
+  userId    String
+  articleId String
+  count     Int      @default(1)
+  user      UserModel @relation(fields: [userId], references: [id])
+  article   Article   @relation(fields: [articleId], references: [id])
+  @@unique([userId, articleId])
+}
+
+
+model Follow {
+  followerId  String
+  followingId String
+  follower    UserModel @relation("follower", fields: [followerId], references: [id])
+  following   UserModel @relation("following", fields: [followingId], references: [id])
+  @@id([followerId, followingId])
+}
+
+model Bookmark {
+  userId    String
+  articleId String
+  createdAt DateTime @default(now())
+  user      UserModel @relation(fields: [userId], references: [id])
+  article   Article   @relation(fields: [articleId], references: [id])
+  @@id([userId, articleId])
 }
 
 model WritingStreak {
@@ -59,30 +109,16 @@ model WritingDay {
   @@unique([userId, date])
 }
 
-
 model Events {
-  id        String   @id @default(uuid())
-  userId    String
-  type      EventType
-  payload   Json
-  processed Boolean  @default(false)
+  id         String    @id @default(uuid())
+  userId     String
+  type       EventType
+  payload    Json
+  processed  Boolean   @default(false)
+  retryCount Int       @default(0)
 
   createdAt DateTime @default(now())
   user UserModel @relation(fields: [userId], references: [id])
-} 
-
-model ArticleVersion {
-  id           String    @id @default(uuid())
-  articleId    String
-  version      Int
-  title        String
-  content      String
-  content_json Json?
-  wordCount    Int
-  createdAt    DateTime @default(now())
-  article      Article @relation(fields: [articleId], references: [id])
-  @@unique([articleId, version])
-
 }
 
 enum EventType{
