@@ -1,22 +1,43 @@
 import { Hono } from 'hono'
 import { sign } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { getPrismaClient } from '../lib/prisma';
 import { signinSchema, signupSchema } from '@abhimanyutiwaribot/medium-app-validation';
+import { authMiddleware } from '../middleware/auth-middleware';
 
 const user = new Hono<{
+
     Bindings: {
         DATABASE_URL: string,
         ACCELERATE_URL: string,
         JWT_SECRET_KEY: string
+    },
+    Variables: {
+        userId: string
     }
 }>()
+
 
 
 // POST /api/v1/user/signup
 // POST /api/v1/user/signin
 
 
+const SEVEN_DAYS = 60 * 60 * 24 * 7; // seconds
+
+function cookieOptions(env: string) {
+    const isProd = env !== 'development';
+    return {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'Strict' as const,
+        maxAge: SEVEN_DAYS,
+        path: '/',
+    };
+}
+
+// POST /api/v1/user/signup
 user.post('/signup', async (c) => {
     const prisma = getPrismaClient(c.env.ACCELERATE_URL)
 
@@ -25,26 +46,21 @@ user.post('/signup', async (c) => {
 
         const parsed = signupSchema.safeParse(body);
 
-        if(!parsed.success){
+        if (!parsed.success) {
             return c.json({
                 error: parsed.error.flatten()
             }, 400)
         }
 
         const isUser = await prisma.userModel.findUnique({
-            where: {
-                email: body.email,
-            },
+            where: { email: body.email },
         })
 
         if (isUser) {
-            return c.json({
-                message: `User already exists. Please Sign in.`
-            }, 409)
+            return c.json({ error: 'User already exists. Please sign in.' }, 409)
         }
 
         const hashedPassword = await bcrypt.hash(body.password, 10)
-
 
         const newUser = await prisma.userModel.create({
             data: {
@@ -56,82 +72,87 @@ user.post('/signup', async (c) => {
         })
 
         const jwt = await sign({
-            sub: newUser.id
+            sub: newUser.id,
+            exp: Math.floor(Date.now() / 1000) + SEVEN_DAYS,
         }, c.env.JWT_SECRET_KEY)
 
-        return c.json({
-            message: "User Created Successfully",
-            token: jwt
-        }, 201);
+        setCookie(c, 'access_token', jwt, cookieOptions('production'))
+
+        return c.json({ message: 'User created successfully' }, 201);
 
     } catch (e) {
         console.error(e)
-        c.status(500);
-        return c.json({
-            error: `error while signing up`
-        })
+        return c.json({ error: 'Error while signing up' }, 500)
     }
 });
 
+// POST /api/v1/user/signin
 user.post('/signin', async (c) => {
-    // console.log(c.env.JWT_SECRET_KEY)
-    // console.log(c.env.DATABASE_URL)
     const prisma = getPrismaClient(c.env.ACCELERATE_URL)
 
     try {
         const body = await c.req.json();
         const parsed = signinSchema.safeParse(body);
 
-        if(!parsed.success){
-            return c.json({
-                error: parsed.error.flatten()
-            }, 400)
+        if (!parsed.success) {
+            return c.json({ error: parsed.error.flatten() }, 400)
         }
 
-
-        const user = await prisma.userModel.findUnique({
-            where: {
-                email: body.email,
-            }
+        const foundUser = await prisma.userModel.findUnique({
+            where: { email: body.email }
         })
 
-        if (!user) {
-            c.status(401);
-            return c.json({
-                error: `Credentials are invalid`
-            })
+        if (!foundUser) {
+            return c.json({ error: 'Invalid credentials' }, 401)
         }
 
-        const isPasswordvalid = await bcrypt.compare(
-            body.password, user.password
-        )
+        const isPasswordValid = await bcrypt.compare(body.password, foundUser.password)
 
-        if (!isPasswordvalid) {
-            return c.json({
-                error: "Invalid Credentials"
-            }, 403)
+        if (!isPasswordValid) {
+            return c.json({ error: 'Invalid credentials' }, 401)
         }
 
         const jwt = await sign({
-            sub: user.id
+            sub: foundUser.id,
+            exp: Math.floor(Date.now() / 1000) + SEVEN_DAYS,
         }, c.env.JWT_SECRET_KEY)
 
-        return c.json({
-            message: `Welcome back`,
-            token: jwt
-        }, 200)
+        setCookie(c, 'access_token', jwt, cookieOptions('production'))
+
+        return c.json({ message: 'Welcome back' }, 200)
 
     } catch (e) {
         console.error(e);
-        c.json({
-            message: "Internal Server Error",
-        }, 500)
-
+        return c.json({ error: 'Internal server error' }, 500)
     }
 });
 
+// POST /api/v1/user/signout
+user.post('/signout', (c) => {
+    deleteCookie(c, 'access_token', { path: '/' });
+    return c.json({ message: 'Signed out' }, 200);
+});
 
+user.get('/me', authMiddleware, async (c) => {
+    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+    const userId = c.get('userId');
+
+    const user = await prisma.userModel.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            username: true,
+            name: true,
+            bio: true,
+            avatar: true
+        }
+    });
+
+    return c.json(user);
+});
 
 export default user;
+
 
 

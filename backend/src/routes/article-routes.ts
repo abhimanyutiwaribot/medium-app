@@ -12,14 +12,17 @@ import { articleOwnership } from "../article/article-ownership";
 import { getArticleDiff } from "../article/article-diff";
 import { getArticleForEdit } from "../article/get-article-for-edit";
 import { getDraftArticles } from "../article/get-draft-articles";
+import { clapArticle } from "../article/clap-article";
+import { toggleBookmark } from "../article/bookmark-article";
+import { clapSchema } from "@abhimanyutiwaribot/medium-app-validation";
 
 
 const article = new Hono<{
-  Bindings:{
+  Bindings: {
     DATABASE_URL: string,
     ACCELERATE_URL: string,
   };
-  Variables:{
+  Variables: {
     userId: string
   }
 }>;
@@ -37,56 +40,56 @@ article.use("*", authMiddleware)
 
 //create article
 article.post('/article', async (c) => {
-    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
-    const body = await c.req.json();
-    const userId = c.get('userId');
+  const body = await c.req.json();
+  const userId = c.get('userId');
 
-    const parsed = createArticleSchema.safeParse(body);
+  const parsed = createArticleSchema.safeParse(body);
 
-    if(!parsed.success){
-      return c.json({
-        error: parsed.error
-      }, 400)
-    }
+  if (!parsed.success) {
+    return c.json({
+      error: parsed.error
+    }, 400)
+  }
 
-    const articleCreate = await createArticle(
-      prisma,
-      userId,
-      body.title,
-      body.content_markdown,
-      body.content_json
-    )
-    
-    return c.json(articleCreate);
+  const articleCreate = await createArticle(
+    prisma,
+    userId,
+    body.title,
+    body.content_markdown,
+    body.content_json
+  )
+
+  return c.json(articleCreate);
 });
 
 
 //edit article
-article.put("/edit/:id", async(c) => {
-    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+article.put("/edit/:id", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
-    const articleId = c.req.param("id");
-    const body = await c.req.json();
+  const articleId = c.req.param("id");
+  const body = await c.req.json();
 
-    const parsed = editArticleSchema.safeParse(body);
-    if(!parsed.success){
-      return c.json({
-        error: parsed.error
-      }, 400)
-    }
+  const parsed = editArticleSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({
+      error: parsed.error
+    }, 400)
+  }
 
-    const userId = c.get('userId')
-    const result = await editArticle(
-      prisma,
-      articleId,
-      userId,
-      body.title,
-      body.content_markdown,
-      body.content_json
-    )
-    
-    return c.json(result);
+  const userId = c.get('userId')
+  const result = await editArticle(
+    prisma,
+    articleId,
+    userId,
+    body.title,
+    body.content_markdown,
+    body.content_json
+  )
+
+  return c.json(result);
 })
 
 
@@ -116,59 +119,59 @@ article.get("/edit/:id", async (c) => {
 
 
 //see article
-article.get("/:id", async(c) => {
-    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
-    const articleId = c.req.param("id");
-    const userId = c.get('userId')
-    const articleData = await getArticle(
-      prisma, articleId, userId
-    );
+article.get("/:id", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get('userId')
+  const articleData = await getArticle(
+    prisma, articleId, userId
+  );
 
-    return c.json(articleData);
+  return c.json(articleData);
 });
 
 
 //see article versions
 article.get("/:id/versions", async (c) => {
-    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
-    const articleId = c.req.param("id");
-    const userId = c.get('userId')
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get('userId')
 
-    const versions = await getArticleVersions(
-      prisma,
-      articleId,
-      userId
-    );
+  const versions = await getArticleVersions(
+    prisma,
+    articleId,
+    userId
+  );
 
-    return c.json(versions);
+  return c.json(versions);
 });
 
 
 // see article version's version 
 article.get("/:id/versions/:version", async (c) => {
-    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
-    const articleId = c.req.param("id");
-    const version = Number(c.req.param("version"));
-    const userId = c.get('userId')
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const version = Number(c.req.param("version"));
+  const userId = c.get('userId')
 
-    if(Number.isNaN(version)){
-      return c.json({
-        error: "Invalid version"
-      },400)
-    }
+  if (Number.isNaN(version)) {
+    return c.json({
+      error: "Invalid version"
+    }, 400)
+  }
 
-    const data = await getArticleVersion(
-      prisma,
-      articleId,
-      version,
-      userId
-    );
+  const data = await getArticleVersion(
+    prisma,
+    articleId,
+    version,
+    userId
+  );
 
-    return c.json(data);
+  return c.json(data);
 });
 
 // publish the article
-article.post("/:id/publish", async(c) => {
+article.post("/:id/publish", async (c) => {
   const prisma = getPrismaClient(c.env.ACCELERATE_URL);
 
   const articleId = c.req.param("id");
@@ -203,7 +206,7 @@ article.get("/:id/diff", async (c) => {
   const from = Number(c.req.query("from"));
   const to = Number(c.req.query("to"));
 
-  if(!from || !to || from >= to){
+  if (!from || !to || from >= to) {
     return c.json({
       error: "Invalid diff range"
     }, 400);
@@ -216,11 +219,11 @@ article.get("/:id/diff", async (c) => {
     from,
     to
   )
-  
+
   return c.json(diffData)
 })
 
-article.get("/article/drafts", async(c) => {
+article.get("/article/drafts", async (c) => {
   const prisma = getPrismaClient(c.env.ACCELERATE_URL);
   const userId = c.get("userId");
 
@@ -228,8 +231,31 @@ article.get("/article/drafts", async(c) => {
     prisma,
     userId
   )
-  
+
   return c.json(drafts);
 })
 
+// Clap for an article
+article.post("/:id/clap", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get("userId");
+  const body = await c.req.json().catch(() => ({}));
+
+  const result = await clapArticle(prisma, userId, articleId);
+  return c.json(result);
+});
+
+
+// Bookmark/Unbookmark an article
+article.post("/:id/bookmark", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get("userId");
+
+  const result = await toggleBookmark(prisma, userId, articleId);
+  return c.json(result);
+});
+
 export default article;
+
