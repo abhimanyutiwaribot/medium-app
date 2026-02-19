@@ -6,190 +6,118 @@ import type React from "react";
 
 export default function ArticleRenderer({ content }: { content: string }) {
   return (
-    <div className="prose prose-invert prose-lg max-w-none
-  prose-headings:font-semibold
-  prose-headings:tracking-tight
-  prose-p:leading-relaxed
-  prose-p:text-gray-100
-  prose-a:text-blue-300
-  prose-a:no-underline
-  hover:prose-a:text-blue-200
-  prose-strong:text-white
-  prose-code:text-gray-200
-  prose-code:bg-white/10
-  prose-code:px-1.5
-  prose-code:py-0.5
-  prose-code:rounded
-  prose-pre:bg-black/40
-  prose-pre:backdrop-blur-sm
-  prose-pre:border
-  prose-pre:border-white/10
-  prose-blockquote:border-l-white/30
-  prose-blockquote:text-gray-200
-  prose-img:rounded-lg
-  prose-img:shadow-xl">
+    <div className="prose prose-lg max-w-none 
+      prose-headings:text-foreground 
+      prose-p:text-foreground/90 
+      prose-strong:text-foreground 
+      prose-blockquote:text-muted-foreground 
+      prose-blockquote:border-l-primary/30
+      prose-a:text-foreground 
+      prose-a:underline 
+      prose-code:text-foreground 
+      prose-code:bg-muted 
+      prose-pre:bg-muted/50
+      prose-pre:border
+      prose-pre:border-border">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeRaw]}
         components={{
-          // Headings with better hierarchy and spacing
           h1: ({ children }) => (
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mt-12 mb-6 leading-tight first:mt-0">
+            <h1 className="text-4xl md:text-5xl font-bold mt-16 mb-8 first:mt-0 tracking-tighter">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-10 mb-5 leading-tight ">
+            <h2 className="text-3xl md:text-4xl font-bold mt-12 mb-6 tracking-tight">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-8 mb-4 leading-snug ">
+            <h3 className="text-2xl md:text-3xl font-bold mt-10 mb-4 tracking-tight">
               {children}
             </h3>
           ),
-          h4: ({ children }) => (
-            <h4 className="text-lg sm:text-xl lg:text-2xl font-semibold mt-6 mb-3 leading-snug ">
-              {children}
-            </h4>
-          ),
-          h5: ({ children }) => (
-            <h5 className="text-base sm:text-lg lg:text-xl font-semibold mt-6 mb-3 leading-normal ">
-              {children}
-            </h5>
-          ),
-          h6: ({ children }) => (
-            <h6 className="text-base sm:text-lg font-semibold mt-6 mb-3 leading-normal ">
-              {children}
-            </h6>
-          ),
-
-          // Paragraphs with optimal reading width and spacing
           p: ({ children, node }: any) => {
             const hasOnlyImage = node?.children?.length === 1 &&
               node?.children[0]?.tagName === 'img';
 
-            if (hasOnlyImage) {
-              return <>{children}</>;
-            }
+            if (hasOnlyImage) return <>{children}</>;
 
             return (
-              <p className="text-base sm:text-lg leading-relaxed mb-6 ">
+              <p className="mb-8 leading-relaxed">
                 {children}
               </p>
             );
           },
-
-          // Text formatting
-          strong: ({ children }) => (
-            <strong className="font-bold ">{children}</strong>
-          ),
-
-          em: ({ children }) => (
-            <em className="italic ">{children}</em>
-          ),
-
-          del: ({ children }) => (
-            <del className="line-through ">{children}</del>
-          ),
-
-          mark: ({ children }) => (
-            <mark className="bg-yellow-200 px-1 rounded">{children}</mark>
-          ),
-
-          // Blockquotes with better styling
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-blue-500 bg-blue-50 pl-6 pr-4 py-4 my-6 italic  rounded-r">
+            <blockquote className="border-l-4 border-primary/20 pl-8 my-10 italic text-2xl text-muted-foreground/80">
               {children}
             </blockquote>
           ),
-
-          // Lists with better spacing and readability
           ul: ({ children }) => (
-            <ul className="list-disc pl-6 my-6 space-y-3 ">
+            <ul className="list-disc pl-8 my-8 space-y-4 text-lg">
               {children}
             </ul>
           ),
-
-          ol: ({ children, className, style }: any) => {
-            const counterTypeMatch = className?.match(/list-counter-(\S+)/);
-            const counterType = counterTypeMatch?.[1] || style?.listStyleType || 'decimal';
-
-            return (
-              <ol
-                className="pl-6 my-6 space-y-3 "
-                style={{ listStyleType: counterType }}
-              >
-                {children}
-              </ol>
-            );
-          },
-
+          ol: ({ children }) => (
+            <ol className="list-decimal pl-8 my-8 space-y-4 text-lg">
+              {children}
+            </ol>
+          ),
           li: ({ children }) => (
-            <li className="text-base sm:text-lg leading-relaxed">
+            <li className="leading-relaxed">
               {children}
             </li>
           ),
-
-          // Code blocks with better contrast and scrolling
           pre: ({ children }) => (
-            <pre className="bg-gray-900  rounded-lg p-4 sm:p-6 my-8 overflow-x-auto shadow-lg border border-gray-700">
+            <pre className="bg-muted/30 border border-border rounded-xl p-6 my-10 overflow-x-auto text-sm md:text-base font-normal">
               {children}
             </pre>
           ),
-
-          code: ({ inline, className, children }: { inline?: boolean, className?: string, children?: React.ReactNode }) => {
+          code: ({ inline, children }: { inline?: boolean, children?: React.ReactNode }) => {
             if (inline) {
               return (
-                <code className="bg-gray-100 px-2 py-0.5 rounded text-sm font-mono text-red-600 border border-gray-200">
+                <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono border border-border/50">
                   {children}
                 </code>
               );
             }
-
             return (
-              <code className={`font-mono text-sm sm:text-base ${className ?? ""}`}>
+              <code className="font-mono leading-relaxed">
                 {children}
               </code>
             );
           },
-
-          // Images with captions and better sizing
           img: ({ src, alt }: any) => {
             if (!src) return null;
             return (
-              <figure className="my-8 mx-auto max-w-2xl">
+              <figure className="my-12">
                 <img
                   src={src}
                   alt={alt ?? ""}
-                  className="rounded-lg w-full h-auto max-h-96 object-contain shadow-md"
+                  className="rounded-xl w-full h-auto shadow-sm border border-border/50"
                   loading="lazy"
                 />
                 {alt && (
-                  <figcaption className="text-sm mt-2 text-center italic">
+                  <figcaption className="text-sm mt-4 text-center text-muted-foreground italic font-medium">
                     {alt}
                   </figcaption>
                 )}
               </figure>
             );
           },
-
-          // Links with better visibility
           a: ({ children, href }) => (
             <a
               href={href}
-              className="text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2 hover:decoration-blue-800 transition-colors"
+              className="text-foreground underline decoration-primary/30 underline-offset-4 hover:decoration-primary transition-all font-medium"
               target={href?.startsWith('http') ? '_blank' : undefined}
               rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
             >
               {children}
             </a>
           ),
-
-          // Horizontal rule
-          hr: () => (
-            <hr className="my-12 border-t-2 border-gray-200" />
-          ),
+          hr: () => <hr className="my-16 border-t border-border/60" />,
         }}
       >
         {content}
