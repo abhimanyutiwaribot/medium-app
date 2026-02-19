@@ -45,7 +45,7 @@ export default function ArticleRenderer({ content }: { content: string }) {
             if (hasOnlyImage) return <>{children}</>;
 
             return (
-              <p className="mb-8 leading-relaxed">
+              <p className="mb-8 leading-[1.6] text-lg sm:text-xl lg:text-2xl font-[450]">
                 {children}
               </p>
             );
@@ -66,7 +66,7 @@ export default function ArticleRenderer({ content }: { content: string }) {
             </ol>
           ),
           li: ({ children }) => (
-            <li className="leading-relaxed">
+            <li className="leading-[1.6]">
               {children}
             </li>
           ),
