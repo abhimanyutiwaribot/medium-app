@@ -4,13 +4,14 @@ import Header from "@editorjs/header";
 import ImageTool from "@editorjs/image";
 import List from "@editorjs/list";
 import { useEffect, useRef } from "react";
+import { apifetch } from "../../api/client";
 
 type Props = {
   onChange: (data: any) => void;
   initialData?: any
 }
 
-export default function EditorCanvas({ onChange , initialData}: Props) {
+export default function EditorCanvas({ onChange, initialData }: Props) {
   const editorRef = useRef<EditorJS | null>(null);
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function EditorCanvas({ onChange , initialData}: Props) {
 
     const editor = new EditorJS({
       holder: "editorjs",
-      placeholder: "Tell what's on your mind....",
+      placeholder: "Tell what's on your mind",
       data: initialData,
       tools: {
         header: Header,
@@ -38,15 +39,9 @@ export default function EditorCanvas({ onChange , initialData}: Props) {
             },
             uploader: {
               async uploadByFile(file: File) {
-                const signRes = await fetch("http://localhost:8787/api/v1/image/sign", {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  },
-                });
+                const sig = await apifetch("/image/sign");
 
-                const sig = await signRes.json();
 
-       
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("api_key", sig.apiKey);
