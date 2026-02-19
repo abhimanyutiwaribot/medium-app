@@ -20,5 +20,15 @@ export const createArticleSchema = z.object({
 
 export const editArticleSchema = createArticleSchema;
 
+export const commentSchema = z.object({
+  content: z.string().min(1).max(500),
+});
+
+export const clapSchema = z.object({
+  count: z.number().int().min(1).max(50).optional(),
+});
+
 export type CreateArticleInput = z.infer<typeof createArticleSchema>;
 export type EditArticleInput = z.infer<typeof editArticleSchema>;
+export type CommentInput = z.infer<typeof commentSchema>;
+export type ClapInput = z.infer<typeof clapSchema>;
