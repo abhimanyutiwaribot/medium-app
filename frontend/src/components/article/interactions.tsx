@@ -80,19 +80,26 @@ export default function ArticleInteractions({
   };
 
   const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent toggling visibility
+    e.stopPropagation();
     const url = window.location.href;
 
+    // 1. Try Native Share (Mobile)
     if (navigator.share) {
       try {
         await navigator.share({
           title: document.title,
           url: url
         });
+        // On many mobile browsers, 'share' handles the notification/success state.
+        // We return early so we don't accidentally show a clipboard toast later.
         return;
-      } catch (err) { }
+      } catch (err) {
+        // If the user cancelled or the share failed, we fall through to clipboard copy
+        console.log("Share failed or cancelled, falling back to clipboard");
+      }
     }
 
+    // 2. Try Clipboard Copy (Fallback or Desktop)
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
@@ -106,7 +113,7 @@ export default function ArticleInteractions({
       }
       toast.success("Link copied to clipboard!");
     } catch (err) {
-      toast.error("Failed to copy link.");
+      toast.error("Could not copy link. Please manually copy the URL.");
     }
   };
 
@@ -114,8 +121,8 @@ export default function ArticleInteractions({
     <div
       onClick={(e) => e.stopPropagation()}
       className={`interaction-bar fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 px-8 py-4 bg-background border border-border rounded-full shadow-2xl glass z-50 transition-all duration-500 ease-in-out ${isVisible
-          ? "translate-y-0 opacity-100"
-          : "translate-y-24 opacity-0 pointer-events-none md:translate-y-0 md:opacity-100 md:pointer-events-auto"
+        ? "translate-y-0 opacity-100"
+        : "translate-y-24 opacity-0 pointer-events-none md:translate-y-0 md:opacity-100 md:pointer-events-auto"
         }`}
     >
       <button

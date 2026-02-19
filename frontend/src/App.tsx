@@ -60,7 +60,14 @@ function App() {
           <Route path="/signin" element={<Signin />} />
 
           <Route path="/article/:id" element={<Article />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/u/:username" element={<PublicProfile />} />
 
           <Route
