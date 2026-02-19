@@ -1,48 +1,74 @@
-// navbar.tsx
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Link } from "react-router-dom"
+import { PenLine } from "lucide-react"
+import { useAuth } from "../context/auth-context"
 
 export function Navbar() {
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
+  const { user, loading } = useAuth();
+
+  const initials = user
+    ? (user.name || user.username)
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+    : "";
 
   return (
-    <nav className="sticky top-0 z-40 border-none border-[#2a2d32]">
-      <div className="max-w-none mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-        {/* Left - Sidebar Trigger */}
-        <div className="flex items-center">
-          <SidebarTrigger className="p-2 text-[#dedede] hover:text-white hover:bg-[#1a1d21] rounded-md transition-colors" />
+    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+        {/* Left */}
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-clean" />
+          <Link to="/" className="text-xl font-bold tracking-tighter hover:opacity-70 transition-clean">
+            Xedium
+          </Link>
         </div>
 
-        {/* Center - Logo */}
-        <a href="/" className="absolute left-1/2 transform -translate-x-1/2">
-          <span className="text-2xl text-white">Xedium</span>
-        </a>
+        {/* Right */}
+        <div className="flex items-center gap-6">
+          {loading ? (
+            // Skeleton while the single /user/me call resolves
+            <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+          ) : user ? (
+            <div className="flex items-center gap-4">
+              <Link
+                to="/editor"
+                className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-clean"
+              >
+                <PenLine className="w-4 h-4 md:hidden" />
+                <span className="hidden md:inline">Write</span>
+              </Link>
 
-        {/* Right - Actions */}
-        <div className="flex items-center gap-9">
-          {isAuthenticated ? (
-            <>
-              <a
-                href="/editor"
-                className="text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                + Write
-              </a>
-              <div className="h-8 w-8 rounded-full bg-[#2a2d32] flex items-center justify-center">
-                <span className="text-white text-sm">JD</span>
-              </div>
-            </>
+              <Link to="/profile" className="group relative">
+                <div className="h-9 w-9 rounded-full bg-muted border-2 border-border group-hover:border-primary/50 overflow-hidden transition-all duration-200 flex items-center justify-center shadow-sm">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || user.username}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+                      {initials}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </div>
           ) : (
-            <>
-              <a href="/signin" className="text-sm text-[#8a8d91] hover:text-white px-3">
+            <div className="flex items-center gap-4">
+              <Link to="/signin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-clean">
                 Sign in
-              </a>
-              <a
-                href="/signup"
-                className="text-sm bg-white hover:bg-gray-100 text-black px-4 py-2 rounded-md transition-colors"
+              </Link>
+              <Link
+                to="/signup"
+                className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-full font-medium hover:opacity-90 transition-clean"
               >
-                Sign up
-              </a>
-            </>
+                Get started
+              </Link>
+            </div>
           )}
         </div>
       </div>
