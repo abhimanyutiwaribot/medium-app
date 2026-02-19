@@ -1,69 +1,91 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signupSchema, type SignupInput } from "@abhimanyutiwaribot/medium-app-validation";
+import { signupSchema, type SignupInput } from "../../lib/schemas";
 import { useNavigate } from "react-router-dom";
 import { apifetch } from "../../api/client";
-import { setToken } from "../../utils/auth";
+import { toast } from "sonner";
+import { useAuth } from "../../context/auth-context";
 
-export default function SignupForm(){
+export default function SignupForm() {
   const navigate = useNavigate();
-  
-    const form = useForm<SignupInput>({
-      resolver: zodResolver(signupSchema),
-    });
-  
-    async function onSubmit(data: SignupInput) {
-      try {
-        const res = await apifetch("/user/signup", {
-          method: "POST",
-          body: JSON.stringify(data),
-        });
-  
-        setToken(res.token);
-        navigate("/");
-      } catch (err: any) {
-        alert(err.error || "Signup failed");
-      }
+  const auth = useAuth();
+
+  const form = useForm<SignupInput>({
+    resolver: zodResolver(signupSchema),
+  });
+
+  async function onSubmit(data: SignupInput) {
+    try {
+      await apifetch("/user/signup", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      await auth.refresh(); // populate global auth state immediately
+      toast.success("Welcome to Xedium!");
+      navigate("/");
+    } catch (err: any) {
+      toast.error(err.error || "Signup failed. Please try again.");
     }
+  }
 
-    return(
-      
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full max-w-md space-y-4 text-black"
-        >
-          <input
-            placeholder="Email: m@example.com"
-            {...form.register("email")}
-            className="rounded-2xl border-2 border-black 
-            focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
-          />
+  return (
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="space-y-5"
+    >
+      <div className="space-y-1">
+        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Full Name</label>
+        <input
+          placeholder="John Doe"
+          {...form.register("name")}
+          className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-clean placeholder:text-muted-foreground/40"
+        />
+      </div>
 
-          <input
-            placeholder="Name"
-            {...form.register("name")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
-          />
+      <div className="space-y-1">
+        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Username</label>
+        <input
+          placeholder="johndoe"
+          {...form.register("username")}
+          className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-clean placeholder:text-muted-foreground/40"
+        />
+        {form.formState.errors.username && (
+          <p className="text-xs text-destructive ml-1">{form.formState.errors.username.message}</p>
+        )}
+      </div>
 
-          <input
-            placeholder="Username"
-            {...form.register("username")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
-          />
+      <div className="space-y-1">
+        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Email</label>
+        <input
+          placeholder="email@example.com"
+          {...form.register("email")}
+          className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-clean placeholder:text-muted-foreground/40"
+        />
+        {form.formState.errors.email && (
+          <p className="text-xs text-destructive ml-1">{form.formState.errors.email.message}</p>
+        )}
+      </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            {...form.register("password")}
-            className="rounded-2xl border-2 border-black focus:outline-none w-5/6 px-5 py-4 mx-auto block font-comic font-normal placeholder:text-slate-800"
-            
-          />
+      <div className="space-y-1">
+        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground ml-1">Password</label>
+        <input
+          type="password"
+          placeholder="••••••••"
+          {...form.register("password")}
+          className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-clean placeholder:text-muted-foreground/40"
+        />
+        {form.formState.errors.password && (
+          <p className="text-xs text-destructive ml-1">{form.formState.errors.password.message}</p>
+        )}
+      </div>
 
-          <button className="w-5/6 py-3 hover:bg-gray-300 hover:text-slate-900 rounded-2xl hover:underline bg-black text-white mx-auto block font-comic font-normal transition duration-800 ease-in-out">
-            Sign up &gt;
-          </button>
-        </form>
-
-    )
-
+      <button
+        type="submit"
+        disabled={form.formState.isSubmitting}
+        className="w-full mt-4 py-4 bg-primary text-primary-foreground rounded-full font-bold text-sm tracking-wide hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+      >
+        {form.formState.isSubmitting ? "Creating account..." : "Create Account"}
+      </button>
+    </form>
+  )
 }
