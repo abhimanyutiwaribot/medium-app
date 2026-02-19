@@ -74,6 +74,8 @@ feed.get("/article/:id", optionalAuthMiddleware, async (c) => {
       v.title,
       v.content,
       v.version,
+      a.id as "articleId",
+      a."authorId",
       a.theme,
       u.username,
       u.name as "authorName",
