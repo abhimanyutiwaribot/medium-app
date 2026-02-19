@@ -6,6 +6,7 @@ import { cors } from 'hono/cors'
 import image from './routes/image-route'
 import feed from './routes/feed-routes'
 import profile from './routes/profile-routes'
+import notification from './routes/notification-routes'
 import { runEventWorker } from './workers/event-worker'
 
 interface Env {
@@ -47,6 +48,7 @@ app.route('/api/v1/q', article);
 app.route('/api/v1/image', image);
 app.route('/api/v1/a', feed)
 app.route('/api/v1/profile', profile)
+app.route('/api/v1/notification', notification)
 
 
 export default {
