@@ -122,7 +122,7 @@ export default function Article() {
           </div>
         </header>
 
-        <section className="article-content ce-paragraph">
+        <section className="article-content">
           <ArticleRenderer content={data.content} />
         </section>
 
