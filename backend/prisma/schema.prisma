@@ -32,6 +32,9 @@ model UserModel {
   
   followers Follow[] @relation("following")
   following Follow[] @relation("follower")
+
+  notificationsReceived Notification[] @relation("notification_recipient")
+  notificationsSent     Notification[] @relation("notification_sender")
 }
 
 model Article {
@@ -124,4 +127,23 @@ model Events {
 enum EventType{
   ARTICLE_VERSION_CREATED
   ARTICLE_PUBLISHED
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipientId String
+  senderId    String?
+  type        NotificationType
+  articleId   String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  recipient UserModel @relation("notification_recipient", fields: [recipientId], references: [id])
+  sender    UserModel? @relation("notification_sender", fields: [senderId], references: [id])
+}
+
+enum NotificationType {
+  FOLLOW
+  CLAP
+  PUBLISH
 }
