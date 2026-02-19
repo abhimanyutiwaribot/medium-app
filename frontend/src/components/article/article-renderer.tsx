@@ -56,12 +56,12 @@ export default function ArticleRenderer({ content }: { content: string }) {
             </blockquote>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-8 my-8 space-y-4 text-lg">
+            <ul className="list-disc pl-8 my-8 space-y-3 text-lg sm:text-xl lg:text-2xl font-[450]">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal pl-8 my-8 space-y-4 text-lg">
+            <ol className="list-decimal pl-8 my-8 space-y-3 text-lg sm:text-xl lg:text-2xl font-[450]">
               {children}
             </ol>
           ),
