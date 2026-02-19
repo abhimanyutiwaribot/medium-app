@@ -66,13 +66,15 @@ export default function Article() {
 
   return (
     <>
-      {/* Background Overlay - outside of animation to prevent 'transform' scroll bug */}
+      {/* Background Overlay - Locked height to prevent mobile 'zoom' on scroll */}
       {selectedTheme && (
         <div
-          className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+          className="fixed top-0 left-0 w-full h-full -z-10 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${selectedTheme.url})`,
-            backgroundColor: selectedTheme.overlay === "dark" ? "#000" : "#fff"
+            backgroundColor: selectedTheme.overlay === "dark" ? "#000" : "#fff",
+            transform: 'translateZ(0)', // Force GPU to prevent scroll jitter
+            willChange: 'transform'
           }}
         >
           <div className={`absolute inset-0 ${selectedTheme.overlay === "dark" ? "bg-black/40" : "bg-white/40"}`} />
@@ -81,7 +83,7 @@ export default function Article() {
 
       <div className={`min-h-screen relative ${selectedTheme ? "" : "bg-background"} ${selectedTheme?.overlay === "dark" ? "dark" : ""}`}>
         <main
-          className="max-w-3xl mx-auto px-6 py-12 md:py-24 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+          className="max-w-3xl mx-auto px-6 py-12 md:py-24 animate-in fade-in slide-in-from-bottom-4 duration-1000"
           style={{ color: selectedTheme?.color || (selectedTheme && selectedTheme.overlay === "light" ? "#333333" : "#ffffff") }}
         >
           <header className="mb-12">
