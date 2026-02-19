@@ -35,6 +35,20 @@ export async function toggleFollow(
         followingId,
       },
     });
+
+    // Create notification
+    try {
+      await prisma.notification.create({
+        data: {
+          recipientId: followingId,
+          senderId: followerId,
+          type: "FOLLOW"
+        }
+      });
+    } catch (e) {
+      console.error("Failed to create notification", e);
+    }
+
     return { followed: true };
   }
 }
