@@ -179,7 +179,6 @@
   margin: 1em 0 0.5em !important;
 } */
 
-.codex-editor,
 .ce-header[data-level="1"] {
   font-size: 1.875rem !important;
 }
@@ -191,10 +190,51 @@
   font-size: 1.5rem !important;
 }
 
+/* Vertical spacing between blocks */
+.ce-block {
+  margin-bottom: 1.5rem;
+}
+
+/* Quote Tool Styling */
+.cdx-quote {
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.cdx-quote__text {
+  font-size: 1.25rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Match list text to paragraph text */
+.cdx-list {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  .cdx-list {
+    font-size: 1.125rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cdx-list {
+    font-size: 1.25rem;
+  }
+}
+
+/* List Item Spacing */
+.cdx-list__item {
+  padding: 0.25rem 0;
+  line-height: 1.6;
+}
+
 /* Responsive adjustments for mobile */
 @media (max-width: 640px) {
-
-  .codex-editor,
   .ce-header[data-level="1"] {
     font-size: 1.5rem !important;
   }
