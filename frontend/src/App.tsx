@@ -1,5 +1,4 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-// import { apifetch } from './api/client'
 import './App.css'
 import Signup from './pages/sign-up'
 import Signin from './pages/sign-in'
@@ -9,45 +8,60 @@ import type { JSX } from 'react'
 import VersionHistoryPage from './pages/version-history'
 import ArticleDiffPage from './pages/diff-history'
 import HomePage from './pages/home'
-import ArticleVersion from './pages/article-version'
 import { Layout } from './components/layout'
 import DraftsPage from './pages/draft-articles'
 import ArticlePreviewPage from './pages/article-preview'
 import Profile from './pages/profile'
-// import ArticleDiffPage from './components/diff/diff-function'
+import PublicProfile from './pages/public-profile'
+import NotificationsPage from './pages/notifications'
+import SettingsPage from './pages/settings'
+import LandingPage from './pages/landing'
+import { AuthProvider, useAuth } from './context/auth-context'
+import { Toaster } from 'sonner'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/" replace />;
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/signin" replace />;
+  return children;
+}
+
+function RootRoute() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+
+  if (!user) {
+    return <LandingPage />;
   }
 
-  return children
+  return (
+    <Layout>
+      <HomePage />
+    </Layout>
+  );
 }
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <Toaster
+          position="bottom-right"
+          expand={false}
+          richColors
+          theme="light"
+          toastOptions={{
+            className: 'rounded-none border border-border shadow-2xl font-medium',
+          }}
+        />
         <Routes>
-          <Route path="/signup" element={<Signup />} /> {/* the signup page */}
-          <Route path="/signin" element={<Signin />} />  {/* the signin page */}
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signin" element={<Signin />} />
 
-          <Route path="/article/:id"
-            element={
-              <Article />
-            } /> {/* the article renderer page based on articleId */}
-
+          <Route path="/article/:id" element={<Article />} />
           <Route path="/profile" element={<Profile />} />
-
-          {/* <Route 
-            path="/article/:id"
-            element={
-              <ProtectedRoute>
-                <ArticleVersion />
-              </ProtectedRoute>
-            }
-          />   */}
+          <Route path="/u/:username" element={<PublicProfile />} />
 
           <Route
             path='/article/drafts'
@@ -71,23 +85,41 @@ function App() {
             <ProtectedRoute>
               <Editor />
             </ProtectedRoute>
-          }
-          />  {/* the editor page */}
+          } />
 
           <Route path="/editor/:id" element={
             <ProtectedRoute>
               <Editor />
             </ProtectedRoute>
-          }
-          />  {/* another editor page for editing */}
-
+          } />
 
           <Route path="/article/:id/vS" element={
             <ProtectedRoute>
               <VersionHistoryPage />
             </ProtectedRoute>
-          }
-          />  {/* the editor page */}
+          } />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <NotificationsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <SettingsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/article/:id/diff"
@@ -100,17 +132,13 @@ function App() {
 
           <Route
             path="/"
-            element={
-              <Layout>
-                <HomePage />
-              </Layout>
-            }
+            element={<RootRoute />}
           />
 
-          <Route path="*" element={<Navigate to="/signin" replace />} />  {/* fallback */}
+          <Route path="*" element={<Navigate to="/signin" replace />} />
         </Routes>
-      </BrowserRouter>
-    </div>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
