@@ -30,10 +30,12 @@ function cookieOptions(env: string) {
     const isProd = env !== 'development';
     return {
         httpOnly: true,
-        secure: isProd,
-        sameSite: 'Strict' as const,
+        secure: true, // required for SameSite=None
+        sameSite: 'None' as const, // Allows cross-domain cookies
         maxAge: SEVEN_DAYS,
         path: '/',
+        // For local dev with http, you might need to adjust this, 
+        // but for deployed workers.dev it MUST be None + Secure.
     };
 }
 
@@ -129,7 +131,11 @@ user.post('/signin', async (c) => {
 
 // POST /api/v1/user/signout
 user.post('/signout', (c) => {
-    deleteCookie(c, 'access_token', { path: '/' });
+    deleteCookie(c, 'access_token', {
+        path: '/',
+        secure: true,
+        sameSite: 'None',
+    });
     return c.json({ message: 'Signed out' }, 200);
 });
 
@@ -145,11 +151,62 @@ user.get('/me', authMiddleware, async (c) => {
             username: true,
             name: true,
             bio: true,
-            avatar: true
+            avatar: true,
+            _count: {
+                select: {
+                    followers: true,
+                    following: true,
+                    article: true
+                }
+            }
         }
     });
 
     return c.json(user);
+});
+
+user.post('/password', authMiddleware, async (c) => {
+    const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+    const userId = c.get('userId');
+
+    try {
+        const { currentPassword, newPassword } = await c.req.json();
+
+        if (!currentPassword || !newPassword) {
+            return c.json({ error: 'Missing password fields' }, 400);
+        }
+
+        if (newPassword.length < 6) {
+            return c.json({ error: 'New password must be at least 6 characters' }, 400);
+        }
+
+        const foundUser = await prisma.userModel.findUnique({
+            where: { id: userId }
+        });
+
+        if (!foundUser) {
+            return c.json({ error: 'User not found' }, 404);
+        }
+
+        const isPasswordValid = await bcrypt.compare(currentPassword, foundUser.password);
+
+        if (!isPasswordValid) {
+            return c.json({ error: 'Incorrect current password' }, 401);
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.userModel.update({
+            where: { id: userId },
+            data: { password: hashedPassword }
+        });
+
+        return c.json({ message: 'Password updated successfully' }, 200);
+
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
 });
 
 export default user;
