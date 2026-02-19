@@ -32,6 +32,28 @@ export async function clapArticle(
         count: 1,
       },
     });
+
+    // Notify author
+    try {
+      const article = await prisma.article.findUnique({
+        where: { id: articleId },
+        select: { authorId: true }
+      });
+
+      if (article && article.authorId !== userId) {
+        await prisma.notification.create({
+          data: {
+            recipientId: article.authorId,
+            senderId: userId,
+            type: "CLAP",
+            articleId: articleId
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Failed to create clap notification", e);
+    }
+
     return { clapped: true };
   }
 }
