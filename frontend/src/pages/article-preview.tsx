@@ -4,6 +4,8 @@ import ThemePicker from "../components/theme/theme-picker";
 import { THEMES, type ThemeKey } from "../themes";
 import ArticleRenderer from "../components/article/article-renderer";
 import { apifetch } from "../api/client";
+import { ArrowLeft, Check } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ArticlePreviewPage() {
   const { id } = useParams();
@@ -19,8 +21,11 @@ export default function ArticlePreviewPage() {
     }).then((data) => {
       setTitle(data.title)
       setContent(data.content_markdown)
+    }).catch((err) => {
+      toast.error(err.error || "Failed to load preview");
+      navigate("/");
     })
-  }, [id])
+  }, [id, navigate])
 
   const handlePublish = async () => {
     try {
@@ -29,9 +34,10 @@ export default function ArticlePreviewPage() {
         method: "POST",
         body: JSON.stringify({ theme })
       });
+      toast.success("Article published successfully!");
       navigate(`/article/${id}`);
     } catch (error) {
-      console.error("Failed to publish:", error);
+      toast.error("Failed to publish");
     } finally {
       setIsPublishing(false);
     }
@@ -40,75 +46,66 @@ export default function ArticlePreviewPage() {
   const selectedTheme = theme ? THEMES[theme] : null;
 
   return (
-    <div className="min-h-screen relative text-white">
-      {/* Background Layer */}
+    <div className={`min-h-screen relative animate-in fade-in duration-1000 ${selectedTheme ? "" : "bg-background"}`}>
+      {/* Theme Background Layer */}
       {selectedTheme && (
-        <>
-          {/* Base background image */}
-          <div
-            className="fixed inset-0 -z-10 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${selectedTheme.url})`,
-            }}
-          />
-
-          {/* Vignette effect - darker edges, lighter center */}
-          <div
-            className="fixed inset-0 -z-10"
-            style={{
-              background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)'
-            }}
-          />
-        </>
+        <div className="fixed inset-0 -z-10 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url(${selectedTheme.url})` }}>
+          <div className={`absolute inset-0 ${selectedTheme.overlay === "dark" ? "bg-black/40" : "bg-white/40"}`} />
+        </div>
       )}
 
-      {/* Publish Button */}
-      <div className="fixed top-4 right-6 z-50">
-        <button
-          onClick={handlePublish}
-          disabled={isPublishing || !theme}
-          className="px-6 py-2.5 rounded-full font-medium transition-all bg-white text-black hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg backdrop-blur-sm"
-        >
-          {isPublishing ? "Publishing..." : "Publish"}
-        </button>
-      </div>
+      {/* Control Header */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-muted rounded-full transition-clean">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <span className="text-[10px] md:text-sm font-bold uppercase tracking-[0.1em] md:tracking-widest text-muted-foreground truncate max-w-[100px] md:max-w-none">
+              Preview & Publish
+            </span>
+          </div>
 
-      {/* Content Area */}
-      <div className="max-w-3xl mx-auto px-4 py-16 relative">
-        {/* Content container with subtle background for readability */}
-        <div className="relative">
-          {/* Optional: Subtle glow behind content for extra separation */}
-          <div
-            className="absolute inset-0 -z-1 blur-3xl opacity-30 bg-black rounded-3xl"
-            style={{ transform: 'scale(1.02)' }}
-          />
-
-          <article className="relative space-y-6">
-            <h1
-              className="text-4xl md:text-5xl font-normal font-comic leading-tight"
-              style={{
-                textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.5)'
-              }}
-            >
-              {title}
-            </h1>
-
-            <div
-              className="prose prose-invert prose-lg max-w-none"
-              style={{
-                textShadow: '1px 1px 8px rgba(0,0,0,0.8)'
-              }}
-            >
-              <ArticleRenderer content={content} />
-            </div>
-          </article>
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing || !theme}
+            className="flex items-center gap-2 px-4 md:px-8 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-primary/20"
+            title="Confirm Publish"
+          >
+            {isPublishing ? "..." : (
+              <>
+                <Check className="w-4 h-4" />
+                <span className="hidden md:inline">Confirm Publish</span>
+                <span className="md:hidden">Publish</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Theme Picker */}
-      <div className="fixed bottom-0 left-0 right-0">
-        <div className="bg-gradient-to-t from-white/95 to-transparent backdrop-blur-sm px-4 pt-6 pb-4">
-          <ThemePicker selected={theme} onSelect={setTheme} />
+      {/* Content Area */}
+      <div
+        className="max-w-3xl mx-auto px-6 py-12 md:py-24 transition-all duration-500"
+        style={{ color: selectedTheme?.color || (selectedTheme && selectedTheme.overlay === "light" ? "#333333" : "#ffffff") }}
+      >
+        <header className="mb-12">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-8 leading-[1.05]">
+            {title}
+          </h1>
+        </header>
+
+        <section className="article-content">
+          <ArticleRenderer content={content} />
+        </section>
+      </div>
+
+      {/* Theme Selector Drawer */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="bg-background/95 backdrop-blur-md border-t border-border/50 p-6 pb-8 shadow-2xl animate-in slide-in-from-bottom duration-500">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4 ml-2">Choose Visual Style</div>
+            <ThemePicker selected={theme} onSelect={setTheme} />
+          </div>
         </div>
       </div>
     </div>

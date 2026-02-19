@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apifetch } from "../api/client";
+import { Skeleton } from "../components/ui/skeleton";
 
 type FeedItem = {
   id: string;
@@ -27,61 +28,64 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen  text-[#8a8d91] font-mono p-12">
-        Loading feed...
+      <div className="min-h-screen p-12 max-w-2xl mx-auto space-y-12">
+        <Skeleton className="h-4 w-32 mb-8 bg-muted" />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="space-y-3">
+            <div className="flex gap-2">
+              <Skeleton className="w-6 h-6 rounded-full bg-muted" />
+              <Skeleton className="w-24 h-4 bg-muted" />
+            </div>
+            <Skeleton className="h-8 w-full bg-muted" />
+            <Skeleton className="h-4 w-1/3 bg-muted" />
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen  text-[#8a8d91] font-comic font-normal p-6 md:p-12">
-      <div className="max-w-4xl mx-auto">
-
-        {/* Section Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#4a4d52]" />
-          <h1 className="text-xl font-bold tracking-tight text-[#dedede]">latest articles</h1>
+    <div className="min-h-screen bg-transparent px-6 py-12 md:py-20 animate-in fade-in duration-700">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 mb-12">
+          <div className="w-1 h-3 bg-foreground" />
+          <h1 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Latest Articles</h1>
         </div>
 
-        {/* Tree Container */}
-        <div className="relative ml-[3px]">
-          {/* Main Vertical Stem */}
-          <div className="absolute left-0 top-0 bottom-6 w-[1px] bg-[#2a2d32]" />
-
+        <div className="space-y-16">
           {items.map((item) => (
-            <div key={item.id} className="relative group flex items-start h-20">
+            <article key={item.id} className="group relative flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                  {/* Placeholder for author avatar */}
+                  <div className="w-full h-full flex items-center justify-center text-[10px] font-bold uppercase">
+                    {item.author.username[0]}
+                  </div>
+                </div>
+                <Link to={`/u/${item.author.username}`} className="hover:text-foreground hover:underline transition-clean">
+                  @{item.author.username}
+                </Link>
+                <span>·</span>
+                <span>{new Date(item.published_At).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+              </div>
 
-              <svg
-                className="absolute left-0 top-0 w-10 h-full text-[#2a2d32] group-hover:text-[#4a4d52] transition-colors"
-                viewBox="0 0 40 40"
-                fill="none"
-              >
-                <path
-                  d="M1 25H35" // Straight down to 20, straight right to 35
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  shapeRendering="crispEdges"
-                />
-              </svg>
-
-              {/* The Dot at the end of the branch */}
-              <div className="absolute left-[35px] top-[42px] w-1.5 h-1.5 rounded-full bg-[#4a4d52] group-hover:bg-white transition-all shadow-[0_0_8px_rgba(255,255,255,0)] group-hover:shadow-[0_0_10px_white]" />
-
-              {/* Text Content */}
-              <Link
-                to={`/article/${item.id}`}
-                className="ml-14 mt-8 flex flex-col md:flex-row md:items-baseline gap-2"
-              >
-                <h2 className="text-[18px] text-[#d1d1d1] group-hover:text-white transition-colors leading-snug">
+              <Link to={`/article/${item.id}`} className="block">
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight group-hover:text-muted-foreground transition-clean mb-2">
                   {item.title}
                 </h2>
-                <div className="flex items-center gap-2 text-xs text-[#4a4d52] whitespace-nowrap">
-                  <span>. . . . by</span>
-                  <span className="text-[#6a6d72] italic group-hover:text-gray-300">@{item.author.username}</span>
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                  Read more
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </Link>
-            </div>
+            </article>
           ))}
+
+          {items.length === 0 && (
+            <div className="text-center py-20 text-muted-foreground italic">
+              No articles yet. Be the first to write.
+            </div>
+          )}
         </div>
       </div>
     </div>

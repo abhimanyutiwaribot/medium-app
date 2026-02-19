@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import EditorCanvas from "../components/editor/editor-canvas";
 import { editorJsToMarkdown } from "../utils/markdown";
 import { apifetch } from "../api/client";
+import { toast } from "sonner";
+import { Skeleton } from "../components/ui/skeleton";
+import { ArrowLeft, Save, Send, Eye } from "lucide-react";
 
 export default function Editor() {
   const navigate = useNavigate();
@@ -13,19 +16,16 @@ export default function Editor() {
   const [content, setContent] = useState<any>(null);
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
   const handleEditorChange = useCallback((data: any) => {
     if (isEditMode && !hasLoadedInitialData) return;
-
     setContent(data);
-    setIsSaved(true);
   }, [hasLoadedInitialData, isEditMode])
 
   useEffect(() => {
     if (!isEditMode) return;
-
     setLoading(true);
 
     apifetch(`/q/edit/${id}`, { method: "GET" })
@@ -33,91 +33,132 @@ export default function Editor() {
         setTitle(data.title);
         setInitialData(data.content_json);
         setCurrentVersion(data.current_version);
-        setIsSaved(false);
         setHasLoadedInitialData(true)
       })
+      .catch(() => toast.error("Failed to load draft"))
       .finally(() => setLoading(false));
   }, [id, isEditMode]);
 
   async function saveDraft() {
-    if (!title || !content){
-      alert("Please add a title and some content");
+    if (!title || !content) {
+      toast.error("Please add a title and some content");
       return;
-    } 
-      
+    }
 
+    setSaving(true);
     const markdown = editorJsToMarkdown(content);
 
-    if (isEditMode) {
-      await apifetch(`/q/edit/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title,
-          content_markdown: markdown,
-          content_json: content,
-        }),
-      });
-      alert("article has been saved as draft you can preview")
-      // navigate(``)
-    } else {
-      await apifetch("/q/article", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          content_markdown: markdown,
-          content_json: content,
-        }),
-      });
-      navigate(`/article/drafts`)
+    try {
+      if (isEditMode) {
+        await apifetch(`/q/edit/${id}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            title,
+            content_markdown: markdown,
+            content_json: content,
+          }),
+        });
+        toast.success("Draft saved successfully");
+      } else {
+        const res = await apifetch("/q/article", {
+          method: "POST",
+          body: JSON.stringify({
+            title,
+            content_markdown: markdown,
+            content_json: content,
+          }),
+        });
+        toast.success("New draft created");
+        navigate(`/editor/${res.id}`);
+      }
+    } catch (error) {
+      toast.error("Failed to save draft");
+    } finally {
+      setSaving(false);
     }
-    setIsSaved(false);
-    
   }
 
   async function publishArticle() {
-    await apifetch(`/q/${id}/publish`, {
-      method: "POST",
-    })
-    navigate('/');
-    alert("Article published!")
+    try {
+      await apifetch(`/q/${id}/publish`, { method: "POST" });
+      toast.success("Article published!");
+      navigate('/');
+    } catch (error) {
+      toast.error("Failed to publish article");
+    }
   }
 
   if (isEditMode && loading) {
-    return <div className="p-6">Loading draft…</div>;
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-20 space-y-12">
+        <Skeleton className="h-16 w-full bg-muted" />
+        <Skeleton className="h-64 w-full bg-muted" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen">
-      <div
-        className="
-          mx-auto px-4 py-6
-          max-w-full
-          sm:max-w-xl
-          lg:max-w-3xl
-        "
-      >
-        {isEditMode && currentVersion !== null && (
-          <div
-            className="mb-2 text-sm text-gray-500 flex gap-2 items-center">
-            <span>
-              Editing based on version {currentVersion}
-            </span>
-
-            {currentVersion > 1 && (
-              <a
-                href={`/article/${id}/diff?from=${currentVersion - 1}&to=${currentVersion}`}
-                target="_blank"
-                className="text-blue-600 underline"
+    <div className="min-h-screen bg-transparent animate-in fade-in duration-1000">
+      {/* Editor Header / Tooling */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4">
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-muted rounded-full transition-clean">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            {isEditMode ? (
+              <button
+                onClick={() => navigate(`/article/${id}/vS`)}
+                className="text-[11px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-clean px-2 py-1 rounded hover:bg-muted/50"
+                title="View Version History"
               >
-                Compare with previous
-              </a>
+                <span className="md:hidden">v{currentVersion}</span>
+                <span className="hidden md:inline">Editing Draft: v{currentVersion}</span>
+              </button>
+            ) : (
+              <span className="text-[11px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground ml-2">
+                New Draft
+              </span>
             )}
           </div>
-        )}
 
-        {/* Title */}
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              onClick={saveDraft}
+              disabled={saving}
+              className="flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-clean flex-shrink-0 disabled:opacity-50"
+              title="Save Draft"
+            >
+              <Save className={`w-4 h-4 ${saving ? "animate-spin" : ""}`} />
+              <span className="hidden md:inline">{saving ? "Saving Draft" : "Save Draft"}</span>
+            </button>
+            {isEditMode && (
+              <>
+                <button
+                  onClick={() => navigate(`/article/${id}/preview`)}
+                  className="flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-clean flex-shrink-0"
+                  title="Preview"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span className="hidden md:inline">Preview</span>
+                </button>
+                <button
+                  onClick={publishArticle}
+                  className="flex items-center justify-center gap-2 px-4 py-2 md:px-6 md:py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:opacity-90 transition-all flex-shrink-0 outline-none active:scale-95"
+                  title="Publish"
+                >
+                  <Send className="w-4 h-4" />
+                  <span className="hidden md:inline">Publish</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-6 py-12 md:py-24">
+        {/* Title Area */}
         <textarea
-          name="title-area"
           placeholder="Title"
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;
@@ -126,54 +167,16 @@ export default function Editor() {
           }}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="
-            no-scrollbar
-            font-comic
-            w-full outline-none font-normal
-            resize-none 
-            bg-transparent
-            text-xl
-            sm:text-2xl
-            lg:text-3xl
-          "
+          className="w-full bg-transparent text-white text-3xl md:text-4xl font-bold tracking-tight outline-none resize-none placeholder:text-white/20 leading-tight mb-4"
         />
 
-        {/* Editor */}
-        <EditorCanvas
-          initialData={initialData}
-          onChange={handleEditorChange}
-        />
-      </div>
-
-      {/* Actions */}
-      <div className="max-w-3xl mx-auto px-4">
-        <button
-          onClick={saveDraft}
-          className="mt-6 bg-white text-black px-4 py-2 rounded"
-        >
-          Save Draft
-        </button>
-        {isEditMode && (
-          <div>
-            <button
-              onClick={publishArticle}
-              className="ml-3 bg-black text-white px-4 py-2 rounded">
-              Publish
-            </button>
-            <button
-              disabled={isSaved}
-              title={isSaved ?  "Save draft to preview" : ""} 
-              onClick={() => navigate(`/article/${id}/preview`)}
-              className={`ml-3 bg-slate-800 text-white border px-4 py-2 rounded ${
-                isSaved
-                  ? "opacity-50 cursor-not-allowed"
-                  : "border"              
-              }`}
-            >
-              Preview
-            </button>
-          </div>
-        )}
+        {/* Editor Canvas */}
+        <div className="article-content">
+          <EditorCanvas
+            initialData={initialData}
+            onChange={handleEditorChange}
+          />
+        </div>
       </div>
     </div>
   );
