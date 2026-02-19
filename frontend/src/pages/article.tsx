@@ -65,81 +65,86 @@ export default function Article() {
   const readingTime = Math.ceil(wordCount / wordsPerMinute);
 
   return (
-    <div className={`min-h-screen relative animate-in fade-in duration-1000 ${selectedTheme ? "" : "bg-background"} ${selectedTheme?.overlay === "dark" ? "dark" : ""}`}>
-      {/* Background Overlay if theme selected */}
+    <>
+      {/* Background Overlay - outside of animation to prevent 'transform' scroll bug */}
       {selectedTheme && (
         <div
-          className="fixed inset-0 -z-10 bg-cover bg-center"
-          style={{ backgroundImage: `url(${selectedTheme.url})` }}
+          className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+          style={{
+            backgroundImage: `url(${selectedTheme.url})`,
+            backgroundColor: selectedTheme.overlay === "dark" ? "#000" : "#fff"
+          }}
         >
           <div className={`absolute inset-0 ${selectedTheme.overlay === "dark" ? "bg-black/40" : "bg-white/40"}`} />
         </div>
       )}
 
-      <main
-        className="max-w-3xl mx-auto px-6 py-12 md:py-24 transition-all duration-500"
-        style={{ color: selectedTheme?.color || (selectedTheme && selectedTheme.overlay === "light" ? "#333333" : "#ffffff") }}
-      >
-        <header className="mb-12">
-          <div className="flex items-center gap-2 text-sm opacity-60 mb-6 uppercase tracking-[0.2em] font-bold">
-            <Link to="/" className="hover:opacity-100 transition-clean">Home</Link>
-            <span>/</span>
-            {user?.id === data.authorId ? (
-              <Link to={`/article/${id}/vS`} className="hover:opacity-100 transition-clean">Story Version {data.version}</Link>
-            ) : (
-              <span>Story Version {data.version}</span>
-            )}
-          </div>
+      <div className={`min-h-screen relative ${selectedTheme ? "" : "bg-background"} ${selectedTheme?.overlay === "dark" ? "dark" : ""}`}>
+        <main
+          className="max-w-3xl mx-auto px-6 py-12 md:py-24 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+          style={{ color: selectedTheme?.color || (selectedTheme && selectedTheme.overlay === "light" ? "#333333" : "#ffffff") }}
+        >
+          <header className="mb-12">
+            <div className="flex items-center gap-2 text-sm opacity-60 mb-6 uppercase tracking-[0.2em] font-bold">
+              <Link to="/" className="hover:opacity-100 transition-clean">Home</Link>
+              <span>/</span>
+              {user?.id === data.authorId ? (
+                <Link to={`/article/${id}/vS`} className="hover:opacity-100 transition-clean">Story Version {data.version}</Link>
+              ) : (
+                <span>Story Version {data.version}</span>
+              )}
+            </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-10 leading-[1.05]">
-            {data.title}
-          </h1>
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-10 leading-[1.05]">
+              {data.title}
+            </h1>
 
-          <div className={`flex items-center justify-between py-8 border-y ${selectedTheme?.overlay === "light" ? "border-black/10" : "border-white/10"}`}>
-            <div className="flex items-center gap-4">
-              <Link to={`/u/${data.username}`}>
-                <div className={`w-12 h-12 rounded-full overflow-hidden shadow-sm ${selectedTheme?.overlay === "light" ? "bg-black/5" : "bg-white/10"}`}>
-                  {data.authorAvatar ? (
-                    <img src={data.authorAvatar} alt={data.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg font-bold uppercase opacity-60">
-                      {data.username[0]}
-                    </div>
-                  )}
-                </div>
-              </Link>
-              <div className="space-y-0.5">
-                <Link to={`/u/${data.username}`} className="font-bold text-lg hover:opacity-70 transition-clean flex items-center gap-2">
-                  {data.authorName || `@${data.username}`}
+            <div className={`flex items-center justify-between py-8 border-y ${selectedTheme?.overlay === "light" ? "border-black/10" : "border-white/10"}`}>
+              <div className="flex items-center gap-4">
+                <Link to={`/u/${data.username}`}>
+                  <div className={`w-12 h-12 rounded-full overflow-hidden shadow-sm ${selectedTheme?.overlay === "light" ? "bg-black/5" : "bg-white/10"}`}>
+                    {data.authorAvatar ? (
+                      <img src={data.authorAvatar} alt={data.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg font-bold uppercase opacity-60">
+                        {data.username[0]}
+                      </div>
+                    )}
+                  </div>
                 </Link>
-                <div className="text-sm opacity-60 flex items-center gap-2 font-medium">
-                  {new Date(data.published_At).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  <span>·</span>
-                  <span>{readingTime} min read</span>
+                <div className="space-y-0.5">
+                  <Link to={`/u/${data.username}`} className="font-bold text-lg hover:opacity-70 transition-clean flex items-center gap-2">
+                    {data.authorName || `@${data.username}`}
+                  </Link>
+                  <div className="text-sm opacity-60 flex items-center gap-2 font-medium">
+                    {new Date(data.published_At).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    <span>·</span>
+                    <span>{readingTime} min read</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <section className="article-content">
-          <ArticleRenderer content={data.content} />
-        </section>
+          <section className="article-content">
+            <ArticleRenderer content={data.content} />
+          </section>
 
-        <footer className="mt-32 pt-16 border-t border-border/10 flex flex-col gap-6">
-          <div className="flex items-center gap-4 text-muted-foreground italic text-lg opacity-60">
-            <div className="w-8 h-[1px] bg-muted-foreground" />
-            <span>The end</span>
-          </div>
-        </footer>
-      </main>
+          <footer className="mt-32 pt-16 border-t border-border/10 flex flex-col gap-6">
+            <div className="flex items-center gap-4 text-muted-foreground italic text-lg opacity-60">
+              <div className="w-8 h-[1px] bg-muted-foreground" />
+              <span>The end</span>
+            </div>
+          </footer>
+        </main>
 
-      <ArticleInteractions
-        articleId={id!}
-        initialClaps={data.clapsCount || 0}
-        initialBookmarked={data.isBookmarked || false}
-        initialClapped={data.isClapped || false}
-      />
-    </div>
+        <ArticleInteractions
+          articleId={id!}
+          initialClaps={data.clapsCount || 0}
+          initialBookmarked={data.isBookmarked || false}
+          initialClapped={data.isClapped || false}
+        />
+      </div>
+    </>
   );
 }
