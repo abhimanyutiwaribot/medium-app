@@ -17,6 +17,8 @@ export default function Editor() {
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
   const handleEditorChange = useCallback((data: any) => {
@@ -25,7 +27,7 @@ export default function Editor() {
   }, [hasLoadedInitialData, isEditMode])
 
   useEffect(() => {
-    if (!isEditMode) return;
+    if (!isEditMode || hasLoadedInitialData) return;
     setLoading(true);
 
     apifetch(`/q/edit/${id}`, { method: "GET" })
@@ -33,19 +35,37 @@ export default function Editor() {
         setTitle(data.title);
         setInitialData(data.content_json);
         setCurrentVersion(data.current_version);
-        setHasLoadedInitialData(true)
+        setHasLoadedInitialData(true);
+        setLastSaved(new Date());
       })
       .catch(() => toast.error("Failed to load draft"))
       .finally(() => setLoading(false));
-  }, [id, isEditMode]);
+  }, [id, isEditMode, hasLoadedInitialData]);
 
-  async function saveDraft() {
+  // Auto-save logic
+  useEffect(() => {
+    // If we're editing but haven't fetched the initial data yet, don't auto-save
+    if (isEditMode && !hasLoadedInitialData) return;
+
+    // Don't auto-save if we don't have enough content to create a draft
+    if (!content || !title || title.trim() === "") return;
+
+    const timer = setTimeout(() => {
+      saveDraft(true); // Silent save
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [content, title, isEditMode, hasLoadedInitialData]);
+
+  async function saveDraft(isAutoSave = false) {
     if (!title || !content) {
-      toast.error("Please add a title and some content");
+      if (!isAutoSave) toast.error("Please add a title and some content");
       return;
     }
 
-    setSaving(true);
+    if (isAutoSave) setAutoSaving(true);
+    else setSaving(true);
+
     const markdown = editorJsToMarkdown(content);
 
     try {
@@ -56,10 +76,14 @@ export default function Editor() {
             title,
             content_markdown: markdown,
             content_json: content,
+            is_autosave: isAutoSave
           }),
         });
-        toast.success("Draft saved successfully");
+
+        setLastSaved(new Date());
+        if (!isAutoSave) toast.success("Version saved successfully");
       } else {
+        // Handle New Draft (Auto or Manual)
         const res = await apifetch("/q/article", {
           method: "POST",
           body: JSON.stringify({
@@ -68,13 +92,24 @@ export default function Editor() {
             content_json: content,
           }),
         });
-        toast.success("New draft created");
-        navigate(`/editor/${res.id}`);
+
+        // CRITICAL: Mark as loaded BEFORE navigating so the useEffect doesn't trigger a fetch
+        setHasLoadedInitialData(true);
+        setCurrentVersion(1);
+        setLastSaved(new Date());
+
+        if (!isAutoSave) {
+          toast.success("New draft created");
+        }
+
+        // Once created, we move to the edit URL silently
+        navigate(`/editor/${res.id}`, { replace: true });
       }
     } catch (error) {
-      toast.error("Failed to save draft");
+      if (!isAutoSave) toast.error("Failed to save draft");
     } finally {
-      setSaving(false);
+      if (isAutoSave) setAutoSaving(false);
+      else setSaving(false);
     }
   }
 
@@ -88,7 +123,7 @@ export default function Editor() {
     }
   }
 
-  if (isEditMode && loading) {
+  if (isEditMode && !hasLoadedInitialData && loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-20 space-y-12">
         <Skeleton className="h-16 w-full bg-muted" />
@@ -123,14 +158,32 @@ export default function Editor() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
+            {/* Auto-save Status */}
+            {(autoSaving || lastSaved) && isEditMode && (
+              <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground transition-all">
+                <div className={`w-1.5 h-1.5 rounded-full ${autoSaving ? "bg-amber-400 animate-pulse" : "bg-emerald-500"}`} />
+                {autoSaving ? (
+                  "Saving..."
+                ) : (
+                  <span>
+                    Saved {lastSaved && (
+                      new Date().getTime() - lastSaved.getTime() < 60000
+                        ? "just now"
+                        : `${Math.floor((new Date().getTime() - lastSaved.getTime()) / 60000)}m ago`
+                    )}
+                  </span>
+                )}
+              </div>
+            )}
+
             <button
-              onClick={saveDraft}
+              onClick={() => saveDraft(false)}
               disabled={saving}
               className="flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-clean flex-shrink-0 disabled:opacity-50"
-              title="Save Draft"
+              title="Save Draft (New Version)"
             >
               <Save className={`w-4 h-4 ${saving ? "animate-spin" : ""}`} />
-              <span className="hidden md:inline">{saving ? "Saving Draft" : "Save Draft"}</span>
+              <span className="hidden md:inline">{saving ? "Saving Version" : "Save Version"}</span>
             </button>
             {isEditMode && (
               <>
