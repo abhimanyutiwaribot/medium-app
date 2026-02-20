@@ -3,8 +3,10 @@ import { apifetch } from "../api/client";
 import Heatmap from "@/components/profile/heatmap";
 import { useNavigate } from "react-router-dom";
 import EditProfileModal from "@/components/profile/edit-profile-modal";
-import { Settings, Plus, ArrowLeft, History } from "lucide-react";
+import { Settings, Plus, ArrowLeft, History, Trash2 } from "lucide-react";
 import { useAuth } from "../context/auth-context";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -14,12 +16,36 @@ export default function Profile() {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [tab, setTab] = useState<"published" | "drafts" | "bookmarks">("published");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     apifetch("/profile/articles").then(setArticles);
     apifetch("/profile/streak").then(setData);
     apifetch("/profile/bookmarks").then(setBookmarks);
   }, []);
+
+  const handleDelete = async () => {
+    if (!articleToDelete) return;
+
+    setIsDeleting(articleToDelete);
+    try {
+      await apifetch(`/a/${articleToDelete}`, { method: "DELETE" });
+      toast.success("Story deleted successfully");
+
+      // Update local state to remove the article
+      setArticles((prev: any) => ({
+        ...prev,
+        published: prev?.published?.filter((a: any) => a.id !== articleToDelete),
+        drafts: prev?.drafts?.filter((a: any) => a.id !== articleToDelete)
+      }));
+      setArticleToDelete(null);
+    } catch (err) {
+      toast.error("Failed to delete story");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   if (!data || !userProfile) {
     return (
@@ -158,18 +184,31 @@ export default function Profile() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-4">
                   {(tab === "published" || tab === "drafts") && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/article/${a.id}/vS`);
-                      }}
-                      className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-all flex items-center justify-center"
-                      title="Version History"
-                    >
-                      <History className="w-4 h-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/article/${a.id}/vS`);
+                        }}
+                        className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-all flex items-center justify-center"
+                        title="Version History"
+                      >
+                        <History className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setArticleToDelete(a.id);
+                        }}
+                        disabled={isDeleting === a.id}
+                        className="p-2 hover:bg-red-500/10 rounded-full text-muted-foreground hover:text-red-500 transition-all flex items-center justify-center disabled:opacity-30"
+                        title="Delete Story"
+                      >
+                        <Trash2 className={`w-4 h-4 ${isDeleting === a.id ? "animate-pulse" : ""}`} />
+                      </button>
+                    </>
                   )}
                   <span className="text-muted-foreground group-hover:text-foreground transition-clean flex-shrink-0">
                     →
@@ -186,6 +225,17 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!articleToDelete}
+        onClose={() => setArticleToDelete(null)}
+        onConfirm={handleDelete}
+        loading={!!isDeleting}
+        title="Delete Story"
+        description="Are you sure you want to delete this story? This action is permanent and cannot be undone."
+        confirmText="Delete Story"
+        variant="danger"
+      />
 
       <EditProfileModal
         isOpen={isEditModalOpen}
