@@ -1,6 +1,6 @@
 export type ThemeKey =
   | "grainy-paper"
-  | "grainy-dark"
+  | "grainy-gradient"
   | "dark-stone"
   | "blackgray-two"
   | "blackgray-normal"
@@ -27,43 +27,43 @@ export const THEMES: Record<
     name: "Grainy Paper",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768726067/theme-grainy-paper_wany8s.jpg",
     overlay: "light",
-    color: "#601111ef" 
+    color: "#000000ff" 
   },
-  "grainy-dark": {
-    name: "Grainy Paper Dark",
-    url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768726068/theme-grainy-paper-with-some-dark-texture_t3zf1h.jpg",
+  "grainy-gradient": {
+    name: "Grainy Gradient",
+    url: "https://res.cloudinary.com/di1gffhk5/image/upload/theme-gradient-background-with-grain-texture_lbc0vx.jpg",
     overlay: "dark",
-    color: "#080101ff" 
+    color: "#c0c0c0ff" 
   },
   "dark-stone": {
     name: "Grainy Darkstone Desk",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768726063/theme-grainy-dark-stone-desk-texture_hjx9aw.jpg",
     overlay: "dark",
-    color: "#e2fff5ff" 
+    color: "rgba(163, 223, 202, 1)" 
   },
   "light-blue": {
     name: "Grainy Light Blue",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1771428682/Light_Colored_Backgrounds_t6sba3.jpg",
     overlay: "dark",
-    color: "#ffffffed"
+    color: "#c0e6e8ed"
   },
   "blackgray-two": {
     name: "Grainy Black Gray 2",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768725328/theme-grainy-blackgray-2_zyoos4.jpg",
     overlay: "dark",
-    color: "#ffffffff"
+    color: "#faf9cbff"
   },
   "blackgray-normal": {
     name: "Grainy Black Gray Normal",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768725309/theme-grainy-blackgray-normal_gwfhkr.jpg",
     overlay: "dark",
-    color: "#ffffffff"
+    color: "#a1a3a5ff"
   },
   "dark": {
     name: "Grainy Dark",
     url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768725288/theme-grainy-dark_iesuhk.jpg",
     overlay: "dark",
-    color: "#c0acacff"
+    color: "#d2adadff"
   },
   "dark-lavander": {
     name: "Grainy Dark Lavander",
@@ -103,8 +103,8 @@ export const THEMES: Record<
   },
   "blue": {
     name: "Grainy Blue",
-    url: "https://res.cloudinary.com/di1gffhk5/image/upload/v1768724216/theme-grainy-blue_igtzhc.jpg",
+    url: "https://res.cloudinary.com/di1gffhk5/image/upload/396e313a-268d-4a01-add2-d5d0b139efcb_iaispk.jpg",
     overlay: "dark",
-    color: "#eeeeeeff"
+    color: "#d3e8f0ff"
   }
 };
