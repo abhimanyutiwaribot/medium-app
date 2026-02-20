@@ -13,6 +13,12 @@ type Props = {
 
 export default function EditorCanvas({ onChange, initialData }: Props) {
   const editorRef = useRef<EditorJS | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  // Keep the ref updated with the latest callback without triggering re-initialization
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     if (editorRef.current) return;
@@ -41,7 +47,6 @@ export default function EditorCanvas({ onChange, initialData }: Props) {
               async uploadByFile(file: File) {
                 const sig = await apifetch("/image/sign");
 
-
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("api_key", sig.apiKey);
@@ -64,24 +69,27 @@ export default function EditorCanvas({ onChange, initialData }: Props) {
                   file: { url: data.secure_url },
                 };
               }
-
             }
           }
         }
       },
       async onChange() {
         const content = await editor.save();
-        onChange(content);
+        onChangeRef.current(content);
       },
     });
 
     editorRef.current = editor;
 
     return () => {
-      editor.destroy;
-      editorRef.current = null;
+      if (editorRef.current) {
+        editorRef.current.destroy();
+        editorRef.current = null;
+        const holder = document.getElementById("editorjs");
+        if (holder) holder.innerHTML = "";
+      }
     };
-  }, [onChange])
+  }, []) // Empty dependency array: Initialize ONCE
 
   return <div id="editorjs" className=" max-w-none" />;
 
