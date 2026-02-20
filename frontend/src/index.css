@@ -385,7 +385,8 @@
 .ce-toolbox svg,
 .ce-inline-tool svg,
 .ce-inline-toolbar__dropdown svg {
-  fill: #000000 !important;
+  /* Remove global fill to allow icon details to show */
+  max-width: 100%;
 }
 
 /* Cleanup tool triggers on black canvas */
@@ -406,18 +407,98 @@
   fill: #ffffff !important;
 }
 
-/* Minimalist hover feedback */
-.ce-inline-tool:hover,
-.ce-conversion-tool:hover,
-.ce-settings__button:hover,
+/* ---------------- Toolbox (The + Menu) ---------------- */
+.ce-toolbox {
+  padding: 4px !important;
+}
+
+.ce-toolbox__button {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  margin-bottom: 2px !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+}
+
 .ce-toolbox__button:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.ce-toolbox__button-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 12px !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: #000000 !important;
+  /* Set color for icons to inherit */
+}
+
+.ce-toolbox__button-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Ensure detailed paths inside SVGs are visible */
+.ce-toolbox__button-icon path,
+.ce-toolbox__button-icon rect,
+.ce-toolbox__button-icon circle {
+  fill: currentColor !important;
+}
+
+/* Fix for icons that use stroke instead of fill */
+.ce-toolbox__button-icon [stroke] {
+  stroke: currentColor !important;
+}
+
+.ce-toolbox__button-label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #000000 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Newer Editor.js Popover support */
+.ce-popover {
+  background-color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+.ce-popover__item-icon {
+  color: #000000 !important;
+}
+
+.ce-popover__item-label {
+  color: #000000 !important;
+  font-weight: 500 !important;
 }
 
 /* ---------------- Safety ---------------- */
 html,
 body {
   overflow-x: hidden;
+}
+
+/* Hide Checklist tool from Editor.js popovers/settings */
+/* Since all list types use data-item-name="list", we target the 3rd consecutive list item */
+.ce-popover-item[data-item-name="list"]+.ce-popover-item[data-item-name="list"]+.ce-popover-item[data-item-name="list"],
+.ce-popover__item[data-item-name="list"]+.ce-popover__item[data-item-name="list"]+.ce-popover__item[data-item-name="list"],
+/* Targeted fix for the Settings menu popover where labels are used instead of data attributes */
+.ce-settings .ce-popover-item:nth-child(3),
+.ce-settings .ce-popover__item:nth-child(3) {
+  display: none !important;
+}
+
+/* Also hide it from the block internal settings if it appears there specifically */
+.cdx-list__settings .ce-popover-item:nth-child(3),
+.cdx-list__settings .ce-popover__item:nth-child(3) {
+  display: none !important;
 }
 
 @layer base {
