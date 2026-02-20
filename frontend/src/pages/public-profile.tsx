@@ -70,29 +70,38 @@ export default function PublicProfile() {
 
   return (
     <div className="min-h-screen bg-transparent animate-in fade-in duration-700">
-      <div className="max-w-3xl mx-auto px-6 py-12 md:py-24">
-        <div className="flex flex-col md:flex-row gap-10 items-start justify-between mb-20 pb-16 border-b border-border">
-          <div className="flex gap-8 items-center">
-            <div className="w-24 h-24 rounded-full bg-muted border border-border overflow-hidden flex-shrink-0">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-10 md:py-24">
+        {/* Profile Header Area */}
+        <div className="flex flex-col md:flex-row gap-8 md:gap-10 items-center md:items-end justify-between mb-12 md:mb-20 pb-12 md:pb-16 border-b border-border text-center md:text-left">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center">
+            {/* Avatar */}
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-muted border border-border overflow-hidden flex-shrink-0 shadow-lg">
               {profile.avatar && (
                 <img src={profile.avatar} alt={profile.username} className="w-full h-full object-cover" />
               )}
             </div>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-bold tracking-tight">{profile.name || profile.username}</h1>
-              <p className="text-muted-foreground text-lg italic">@{profile.username}</p>
-              <div className="flex gap-6 mt-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                <span>{profile._count.followers} Followers</span>
-                <span>{profile._count.following} Following</span>
+            {/* Info */}
+            <div className="space-y-6 md:space-y-2">
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight">{profile.name || profile.username}</h1>
+              <p className="text-muted-foreground text-base md:text-lg italic font-medium opacity-80">@{profile.username}</p>
+              <div className="flex items-center justify-center md:justify-start gap-4 md:gap-8 mt-12 md:mt-6 text-[11px] md:text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground text-center">
+                <span className="flex flex-col md:flex-row md:gap-2 items-center">
+                  <span className="text-foreground text-sm md:text-lg">{profile._count.followers}</span>
+                  <span className="opacity-60">Followers</span>
+                </span>
+                <span className="flex flex-col md:flex-row md:gap-2 items-center">
+                  <span className="text-foreground text-sm md:text-lg">{profile._count.following}</span>
+                  <span className="opacity-60">Following</span>
+                </span>
               </div>
             </div>
           </div>
 
           <button
             onClick={handleFollow}
-            className={`px-8 py-3 rounded-full text-sm font-bold transition-clean flex items-center gap-2 ${profile.isFollowing
-              ? "bg-secondary text-secondary-foreground border border-border"
-              : "bg-primary text-primary-foreground"
+            className={`w-full md:w-auto px-10 py-3.5 rounded-full text-sm font-bold tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-2 ${profile.isFollowing
+              ? "bg-secondary text-secondary-foreground border border-border hover:bg-muted"
+              : "bg-primary text-primary-foreground hover:opacity-90 shadow-lg"
               }`}
           >
             {profile.isFollowing ? (
@@ -109,33 +118,34 @@ export default function PublicProfile() {
           </button>
         </div>
 
-        <div className="mb-20">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8 flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Biography
+        {/* Bio Section */}
+        <div className="mb-10 md:mb-20">
+          <h2 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-muted-foreground/60 mb-3 md:mb-10 flex items-center justify-center md:justify-start gap-2">
+            <BookOpen className="w-3.5 h-3.5" />
+            Bio
           </h2>
-          <p className="article-content text-2xl leading-relaxed italic">
+          <p className="text-xl md:text-3xl leading-relaxed  text-center md:text-left opacity-90 max-w-2xl">
             "{profile.bio || "This user hasn't written a bio yet."}"
           </p>
         </div>
 
         {/* Articles List */}
-        <div className="mt-20">
-          <div className="flex items-center gap-2 mb-10">
-            <div className="w-1 h-3 bg-muted-foreground" />
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Latest Publications</h2>
+        <div className="mt-16 md:mt-24">
+          <div className="flex items-center gap-2 mb-6 md:mb-12">
+            <div className="w-1.5 h-4 bg-primary rounded-full shadow-sm" />
+            <h2 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-muted-foreground/60 leading-none">Latest Publications</h2>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             {profile.articles?.map((article: any) => (
               <Link
                 key={article.id}
                 to={`/article/${article.id}`}
-                className="group w-full py-8 flex items-center justify-between border-b border-border/50 hover:bg-muted/30 transition-clean px-6 -mx-6 rounded-2xl"
+                className="group w-full py-6 md:py-10 flex items-center justify-between border-b border-border/50 hover:bg-muted/30 transition-clean px-4 md:px-8 -mx-4 md:-mx-8 rounded-2xl"
               >
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold tracking-tight group-hover:text-muted-foreground transition-clean">{article.title}</h3>
-                  <div className="text-sm font-medium text-muted-foreground">
+                <div className="space-y-2 md:space-y-3 pr-4">
+                  <h3 className="text-xl md:text-3xl font-bold tracking-tight leading-tight group-hover:text-primary transition-colors">{article.title}</h3>
+                  <div className="text-[11px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground opacity-60">
                     {new Date(article.published_At).toLocaleDateString("en-US", {
                       month: "long",
                       day: "numeric",
@@ -143,13 +153,13 @@ export default function PublicProfile() {
                     })}
                   </div>
                 </div>
-                <div className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all text-xl">
+                <div className="text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all text-xl md:text-2xl opacity-40 group-hover:opacity-100 pr-2">
                   →
                 </div>
               </Link>
             ))}
             {(!profile.articles || profile.articles.length === 0) && (
-              <div className="text-muted-foreground italic py-20 text-center border border-dashed border-border rounded-2xl">
+              <div className="text-muted-foreground italic py-16 md:py-24 text-center border border-dashed border-border rounded-3xl opacity-60">
                 No articles published yet.
               </div>
             )}
