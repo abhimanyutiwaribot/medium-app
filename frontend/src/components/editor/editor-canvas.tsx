@@ -83,7 +83,7 @@ export default function EditorCanvas({ onChange, initialData }: Props) {
 
     return () => {
       if (editorRef.current) {
-        editorRef.current.destroy();
+        editorRef.current.destroy;
         editorRef.current = null;
         const holder = document.getElementById("editorjs");
         if (holder) holder.innerHTML = "";
