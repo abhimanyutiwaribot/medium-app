@@ -30,7 +30,7 @@ export default function Profile() {
 
     setIsDeleting(articleToDelete);
     try {
-      await apifetch(`/a/${articleToDelete}`, { method: "DELETE" });
+      await apifetch(`/q/${articleToDelete}`, { method: "DELETE" });
       toast.success("Story deleted successfully");
 
       // Update local state to remove the article
