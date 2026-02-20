@@ -156,7 +156,7 @@ user.get('/me', authMiddleware, async (c) => {
                 select: {
                     followers: true,
                     following: true,
-                    article: true
+                    article: { where: { published: true } }
                 }
             }
         }

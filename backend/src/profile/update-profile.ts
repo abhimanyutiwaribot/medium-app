@@ -48,7 +48,7 @@ export async function getPublicProfile(
         select: {
           followers: true,
           following: true,
-          article: true
+          article: { where: { published: true } }
         }
       }
     }
