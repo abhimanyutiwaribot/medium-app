@@ -7,7 +7,8 @@ export async function editArticle(
   userId: string,
   title: string,
   content_markdown: string,
-  content_json: any
+  content_json: any,
+  autoSave: boolean = false
 ) {
   const article = await articleOwnership(
     prisma,
@@ -19,8 +20,36 @@ export async function editArticle(
     throw new Error("Cannot edit a published article. Create a new draft instead.");
   }
 
-  // console.log(content_markdown)
   const wordCount = content_markdown.trim().split(/\s+/).length;
+
+  // If auto-saving, we just update the latest version instead of bumping the version number
+  if (autoSave) {
+    return await prisma.$transaction(async (tx) => {
+      await tx.articleVersion.update({
+        where: {
+          articleId_version: {
+            articleId: articleId,
+            version: article.current_version
+          }
+        },
+        data: {
+          title,
+          content: content_markdown,
+          content_json,
+          wordCount
+        }
+      });
+
+      return {
+        articleId,
+        version: article.current_version,
+        updatedAt: new Date(),
+        wordCount,
+        isAutoSave: true
+      }
+    });
+  }
+
   const nextVersion = article.current_version + 1;
 
   return await prisma.$transaction(async (tx) => {
@@ -52,7 +81,7 @@ export async function editArticle(
         userId: article.authorId,
         type: "ARTICLE_VERSION_CREATED",
         payload: {
-          articleId,  
+          articleId,
           version: nextVersion
         }
       }
