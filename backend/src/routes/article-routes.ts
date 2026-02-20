@@ -11,6 +11,7 @@ import { createArticleSchema, editArticleSchema } from "@abhimanyutiwaribot/medi
 import { articleOwnership } from "../article/article-ownership";
 import { getArticleDiff } from "../article/article-diff";
 import { getArticleForEdit } from "../article/get-article-for-edit";
+import { deleteArticle } from "../article/delete-article";
 import { getDraftArticles } from "../article/get-draft-articles";
 import { clapArticle } from "../article/clap-article";
 import { toggleBookmark } from "../article/bookmark-article";
@@ -86,7 +87,8 @@ article.put("/edit/:id", async (c) => {
     userId,
     body.title,
     body.content_markdown,
-    body.content_json
+    body.content_json,
+    body.is_autosave === true
   )
 
   return c.json(result);
@@ -254,6 +256,16 @@ article.post("/:id/bookmark", async (c) => {
   const userId = c.get("userId");
 
   const result = await toggleBookmark(prisma, userId, articleId);
+  return c.json(result);
+});
+
+// Delete an article
+article.delete("/:id", async (c) => {
+  const prisma = getPrismaClient(c.env.ACCELERATE_URL);
+  const articleId = c.req.param("id");
+  const userId = c.get("userId");
+
+  const result = await deleteArticle(prisma, articleId, userId);
   return c.json(result);
 });
 
