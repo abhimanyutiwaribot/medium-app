@@ -19,10 +19,12 @@ export default function Editor() {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleEditorChange = useCallback((data: any) => {
     if (isEditMode && !hasLoadedInitialData) return;
     setContent(data);
+    setIsDirty(true);
   }, [hasLoadedInitialData, isEditMode])
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export default function Editor() {
         setCurrentVersion(data.current_version);
         setHasLoadedInitialData(true);
         setLastSaved(new Date());
+        setIsDirty(false); // Reset dirty state after initial load
       })
       .catch(() => toast.error("Failed to load draft"))
       .finally(() => setLoading(false));
@@ -65,6 +68,7 @@ export default function Editor() {
 
         setLastSaved(new Date());
         toast.success("Version saved successfully");
+        setIsDirty(false);
       } else {
         // Handle New Draft
         const res = await apifetch("/q/article", {
@@ -82,6 +86,7 @@ export default function Editor() {
         setLastSaved(new Date());
 
         toast.success("New draft created");
+        setIsDirty(false);
 
         // Once created, we move to the edit URL silently
         navigate(`/editor/${res.id}`, { replace: true });
@@ -150,22 +155,39 @@ export default function Editor() {
             </button>
             {isEditMode && (
               <>
-                <button
-                  onClick={() => navigate(`/article/${id}/preview`)}
-                  className="flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-clean flex-shrink-0"
-                  title="Preview"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span className="hidden md:inline">Preview</span>
-                </button>
-                <button
-                  onClick={publishArticle}
-                  className="flex items-center justify-center gap-2 px-4 py-2 md:px-6 md:py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:opacity-90 transition-all flex-shrink-0 outline-none active:scale-95"
-                  title="Publish"
-                >
-                  <Send className="w-4 h-4" />
-                  <span className="hidden md:inline">Publish</span>
-                </button>
+                {/* Preview Button with Tooltip Wrapper */}
+                <div className="group relative">
+                  <button
+                    onClick={() => navigate(`/article/${id}/preview`)}
+                    disabled={isDirty}
+                    className="flex items-center justify-center gap-2 p-2 md:px-4 md:py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-clean flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="hidden md:inline">Preview</span>
+                  </button>
+                  {isDirty && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 border border-border text-[10px] font-bold uppercase tracking-widest text-white rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all pointer-events-none shadow-xl z-[60]">
+                      Save version to preview
+                    </div>
+                  )}
+                </div>
+
+                {/* Publish Button with Tooltip Wrapper */}
+                <div className="group relative">
+                  <button
+                    onClick={publishArticle}
+                    disabled={isDirty}
+                    className="flex items-center justify-center gap-2 px-4 py-2 md:px-6 md:py-2 bg-primary text-primary-foreground text-sm font-bold rounded-full hover:opacity-90 transition-all flex-shrink-0 outline-none active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span className="hidden md:inline">Publish</span>
+                  </button>
+                  {isDirty && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 border border-border text-[10px] font-bold uppercase tracking-widest text-white rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all pointer-events-none shadow-xl z-[60]">
+                      Save version to publish
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -182,7 +204,10 @@ export default function Editor() {
             target.style.height = `${target.scrollHeight}px`;
           }}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (!isEditMode || hasLoadedInitialData) setIsDirty(true);
+          }}
           className="w-full bg-transparent text-white text-3xl md:text-4xl font-bold tracking-tight outline-none resize-none placeholder:text-white/20 leading-tight mb-4"
         />
 
