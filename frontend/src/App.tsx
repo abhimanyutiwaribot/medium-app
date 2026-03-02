@@ -18,6 +18,7 @@ import SettingsPage from './pages/settings'
 import LandingPage from './pages/landing'
 import { AuthProvider, useAuth } from './context/auth-context'
 import { Toaster } from 'sonner'
+import { Analytics } from '@vercel/analytics/react'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -46,6 +47,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Analytics />
         <Toaster
           position="bottom-right"
           expand={false}
