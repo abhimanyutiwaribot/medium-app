@@ -45,6 +45,10 @@ model Article {
   current_version   Int
   published_version Int?
   theme             String?
+  
+  draft_title            String?
+  draft_content_json     Json?
+  draft_content_markdown String?
 
   author    UserModel        @relation(fields: [authorId], references: [id])
   versions  ArticleVersion[]

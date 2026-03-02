@@ -21,77 +21,53 @@ export async function editArticle(
   }
 
   const wordCount = content_markdown.trim().split(/\s+/).length;
-
-  // If auto-saving, we just update the latest version instead of bumping the version number
-  if (autoSave) {
-    return await prisma.$transaction(async (tx) => {
-      await tx.articleVersion.update({
-        where: {
-          articleId_version: {
-            articleId: articleId,
-            version: article.current_version
-          }
-        },
-        data: {
-          title,
-          content: content_markdown,
-          content_json,
-          wordCount
-        }
-      });
-
-      return {
-        articleId,
-        version: article.current_version,
-        updatedAt: new Date(),
-        wordCount,
-        isAutoSave: true
-      }
-    });
-  }
-
   const nextVersion = article.current_version + 1;
 
   return await prisma.$transaction(async (tx) => {
-    await tx.articleVersion.create({
+    // 1. Update the Article's draft content (always done)
+    await tx.article.update({
+      where: { id: articleId },
       data: {
-        articleId,
-        version: nextVersion,
-        title,
-        content: content_markdown,
-        content_json,
-        wordCount,
+        draft_title: title,
+        draft_content_json: content_json,
+        draft_content_markdown: content_markdown,
+        // If it's a manual save, also increment the version
+        ...(autoSave ? {} : { current_version: nextVersion })
       }
     });
 
-    await tx.article.update({
-      where: {
-        id: articleId
-      },
-      data: {
-        current_version: nextVersion
-      },
-      select: {
-        current_version: true
-      }
-    })
-
-    await tx.events.create({
-      data: {
-        userId: article.authorId,
-        type: "ARTICLE_VERSION_CREATED",
-        payload: {
+    // 2. If it's a manual save, create a NEW version record (snapshot)
+    if (!autoSave) {
+      await tx.articleVersion.create({
+        data: {
           articleId,
-          version: nextVersion
+          version: nextVersion,
+          title,
+          content: content_markdown,
+          content_json,
+          wordCount,
         }
-      }
-    })
+      });
+
+      // Log the version creation event
+      await tx.events.create({
+        data: {
+          userId: article.authorId,
+          type: "ARTICLE_VERSION_CREATED",
+          payload: {
+            articleId,
+            version: nextVersion
+          }
+        }
+      });
+    }
 
     return {
       articleId,
-      version: nextVersion,
+      version: autoSave ? article.current_version : nextVersion,
       updatedAt: new Date(),
-      wordCount
+      wordCount,
+      isAutoSave: autoSave
     }
   });
 }

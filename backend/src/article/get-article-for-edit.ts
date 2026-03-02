@@ -16,24 +16,33 @@ export async function getArticleForEdit(
     throw new Error("Cannot edit a published article");
   }
 
-  const version = await prisma.articleVersion.findUnique({
-    where: {
-      articleId_version: {
-        articleId,
-        version: article.current_version,
-      },
-    },
-  });
+  // Fallback to the latest version record if draft fields are empty (e.g. legacy articles)
+  let title = article.draft_title;
+  let content_markdown = article.draft_content_markdown;
+  let content_json = article.draft_content_json;
 
-  if (!version) {
-    throw new Error("Version not found");
+  if (!title && !content_json) {
+    const version = await prisma.articleVersion.findUnique({
+      where: {
+        articleId_version: {
+          articleId,
+          version: article.current_version,
+        },
+      },
+    });
+
+    if (version) {
+      title = version.title;
+      content_markdown = version.content;
+      content_json = version.content_json;
+    }
   }
 
   return {
     articleId,
     current_version: article.current_version,
-    title: version.title,
-    content_markdown: version.content,
-    content_json: version.content_json,
+    title,
+    content_markdown,
+    content_json,
   };
 }

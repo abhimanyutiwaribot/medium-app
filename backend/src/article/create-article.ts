@@ -9,18 +9,21 @@ export async function createArticle(
 	content_json: any
 ) {
 	const wordCount = content_markdown.trim().split(/\s+/).length;
-	return await prisma.$transaction(async(tx) =>{
+	return await prisma.$transaction(async (tx) => {
 		const article = await tx.article.create({
-			data:{
+			data: {
 				authorId,
 				published: false,
 				current_version: 1,
+				draft_title: title,
+				draft_content_json: content_json,
+				draft_content_markdown: content_markdown,
 			},
 		});
 
 
 		await tx.articleVersion.create({
-			data:{
+			data: {
 				articleId: article.id,
 				version: 1,
 				title,
@@ -31,10 +34,10 @@ export async function createArticle(
 		})
 
 		await tx.events.create({
-			data:{
+			data: {
 				userId: authorId,
 				type: "ARTICLE_VERSION_CREATED",
-				payload:{
+				payload: {
 					articleId: article.id,
 					version: 1,
 				}
